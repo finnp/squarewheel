@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SquareWheel - Combining Foursquare and Wheelmap</title>
+    <!-- Bootstrap -->
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+        <div class="navbar">
+          <div class="navbar-inner">
+            <a class="brand" href="/">SquareWheel</a>
+            <ul class="nav">
+              <li><a href="/lastcheckins">Last Checkins</a></li>
+            </ul>
+            <div class="nav pull-right">
+                {% if foursquare_enabled %}
+                    <img alt="user" class="img-rounded" src="{{ foursquare_icon }}"></img>{{ foursquare_firstname }}
+                {% else %}
+                    <a href="https://foursquare.com/oauth2/authenticate?client_id=NDCD5IGLUHKM2D3NIKE2SVKAVPQE23N4AMMGTVV1YGVB1VGT&response_type=code&redirect_uri=http://84.253.207.251:5000/foursquare">
+                        <img alt="Login with Foursquare" src="https://playfoursquare.s3.amazonaws.com/press/logo/connect-blue.png"></img>
+                    </a>
+                {% endif %}
+            </div>
+          </div>
+        </div>
+            {% block content %}
+                This page is intetionally left blank.
+            {% endblock %}
+        </div>
+     </div>
+    <hr class="soften">
+    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+  </body>
+</html>

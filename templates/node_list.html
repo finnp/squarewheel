@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+    {% for venue in venues %}
+    {% if venue.wheelmap_node %}
+    <div class="row-fluid">
+        <h2>{{ venue.wheelmap_node.name }}</h2>
+        <div class="span2">
+            <img alt="Map" src="{{ venue.wheelmap_node.get_openstreetmap_image() }}" class="img-circle" />
+        </div>
+        <div class="span4">
+            <address>
+                <p>{{ venue.wheelmap_node.get_html_address()|safe }}</p>
+            </address>
+            <p>Wheelchair accessibility: {{ venue.wheelmap_node.wheelchair }} <br/>
+            Wheelchair description: {{ venue.wheelmap_node.wheelchair_description}}</p>
+            <ul>
+            <li><a href="{{ venue.wheelmap_node.get_wheelmap_node_url() }}">{{ venue.wheelmap_node.name }} at Wheelmap</a></li>
+            <li><a href="{{ venue.get_foursquare_venue_url() }}">{{ venue.name }} at Foursquare</a></li>
+            </ul>
+        </div>
+    </div>
+    <hr class="soften">
+    {% endif %}
+    {% endfor %}
+{% endblock %}
