@@ -24,13 +24,13 @@ def before_request():
 
 @app.route('/')
 def startpage():
-    return render_template('city_search.html', foursquare_enabled=session['foursquare_enabled'], foursquare_icon = session['foursquare_icon'], foursquare_firstname = session['foursquare_firstname'])
+    return render_template('city_search.html', title="Welcome!")
     
 @app.route('/city/<city>')
 def explore_city(city):
     venues = squarewheel.explore_foursquare(city)
     venues = squarewheel.add_nodes_to_venues(venues)
-    return render_template('node_list.html', venues=venues, foursquare_enabled=session['foursquare_enabled'], foursquare_icon = session['foursquare_icon'], foursquare_firstname = session['foursquare_firstname'])
+    return render_template('node_list.html', venues=venues, title=city.capitalize())
 
 @app.route('/lastcheckins')
 def lastcheckins():
@@ -39,7 +39,7 @@ def lastcheckins():
     
     venues = squarewheel.get_last_foursquare_checkins(session['foursquare_token'])
     venues = squarewheel.add_nodes_to_venues(venues)
-    return render_template('node_list.html', venues=venues, foursquare_enabled=session['foursquare_enabled'], foursquare_icon = session['foursquare_icon'], foursquare_firstname = session['foursquare_firstname'])
+    return render_template('node_list.html', venues=venues, title="Your last check-ins")
         
 @app.route('/foursquare')
 def foursquare_callback():
