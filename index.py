@@ -35,7 +35,7 @@ def explore_city(city):
 @app.route('/lastcheckins')
 def lastcheckins():
     if not 'foursquare_token' in session:
-        return "You need to be logged in into foursquare"
+        return render_template('city_search.html', title="Please connect to foursquare to see your last check-ins!")
     
     venues = squarewheel.get_last_foursquare_checkins(session['foursquare_token'])
     venues = squarewheel.add_nodes_to_venues(venues)
@@ -44,7 +44,7 @@ def lastcheckins():
 @app.route('/todo')
 def todo():
     if not 'foursquare_token' in session:
-        return "You need to be logged in into foursquare"
+        return render_template('city_search.html', title="Plase connect to foursquare to see your to-do lists!")
         
     venues = squarewheel.get_todo_venues(session['foursquare_token'])
     venues = squarewheel.add_nodes_to_venues(venues)
@@ -65,7 +65,8 @@ def foursquare_callback():
     token = json.loads(response)["access_token"]
     session['foursquare_token'] = token
     (session['foursquare_firstname'], session['foursquare_icon']) = squarewheel.get_foursquare_user(token)
-    return "Success" + ", " + session['foursquare_firstname']
+    session['foursquare_enabled'] = True
+    return render_template('city_search.html', title="Your account is connected, start browsing!")
 
 @app.route('/disconnect')
 def foursquare_disconnect():
