@@ -41,6 +41,17 @@ def lastcheckins():
     venues = squarewheel.add_nodes_to_venues(venues)
     return render_template('node_list.html', venues=venues, title="Your last check-ins")
         
+@app.route('/todo')
+def todo():
+    if not 'foursquare_token' in session:
+        return "You need to be logged in into foursquare"
+        
+    venues = squarewheel.get_todo_venues(session['foursquare_token'])
+    venues = squarewheel.add_nodes_to_venues(venues)
+    return render_template('node_list.html', venues=venues, title="Your todo list")
+    
+    
+        
 @app.route('/foursquare')
 def foursquare_callback():
     code = request.args.get('code', '')

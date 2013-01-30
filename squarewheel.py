@@ -143,6 +143,25 @@ def get_last_foursquare_checkins(foursquare_token):
     return venues
 
 
+def get_todo_venues(foursquare_token):
+    
+    request_uri = foursquare_api_url + "users/self/todos" + foursquare_client_data + "&oauth_token=" + foursquare_token + foursquare_version
+    
+    # Number of venues limited to 50
+    request_uri += "&sort=recent"
+    
+    response = urlopen(request_uri).read()
+    
+    results = json.loads(response)
+    
+    venues = []
+    
+    for item in results["response"]["todos"]["items"]:
+        venue_data = FoursquareVenue( item["tip"]["venue"] )
+        venues.append( venue_data )
+        
+    return venues
+
 def search_wheelmap (lat, lng, interval, name):
     """Searches for a place which matches the given name in the 
     given coordinates range. Returns false if nothing found"""
