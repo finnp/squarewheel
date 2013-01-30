@@ -3,7 +3,7 @@
     {% for venue in venues %}
     {% if venue.wheelmap_node %}
     <div class="row-fluid">
-        <h2>{{ venue.wheelmap_node.name }}</h2>
+        <h3>{{ venue.wheelmap_node.name }}</h3>
         <div class="span2">
             <img alt="Map" src="{{ venue.wheelmap_node.get_openstreetmap_image() }}" class="img-circle" />
         </div>
