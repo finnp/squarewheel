@@ -84,6 +84,16 @@ class WheelmapNode:
         (xtile, ytile) = deg2num(self.lat, self.lng, zoom)
         uri = "http://b.tile.openstreetmap.org/%s/%s/%s.png" % (zoom, xtile, ytile)
         return uri
+    
+    def get_map_with_marker(self):
+        html =  "<div style='position:relative'>"
+        html += "<div style='position:absolute; left:69px; top:69px;' >"
+        html += "<img src='%s' alt='Marker'/>" % self.get_color_coded_icon()
+        html += "</div>"
+        html += "<img src='%s' alt='Map' class='img-circle'/>" % self.get_openstreetmap_image(16)
+        html += "</div>"
+        return html
+        
         
             
 # By OpenStreetMap
