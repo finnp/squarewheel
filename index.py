@@ -10,6 +10,7 @@ app = Flask(__name__)
 
 @app.before_request
 def before_request():
+    
     if 'foursquare_token' in session:
         session['foursquare_enabled'] = True
     else:
@@ -20,37 +21,41 @@ def before_request():
         session['foursquare_icon'] = None
         session['foursquare_firstname'] = None
     
-    
 
 @app.route('/')
 def startpage():
     return render_template('city_search.html', title="Welcome!")
     
-@app.route('/city/<city>')
+@app.route('/foursquare/venues/explore/<city>')
 def explore_city(city):
     venues = squarewheel.explore_foursquare(city)
-    venues = squarewheel.add_nodes_to_venues(venues)
-    return render_template('node_list.html', venues=venues, title=city.capitalize())
+    return render_template('venue_list.html', venues=venues)
 
-@app.route('/lastcheckins')
+@app.route('/foursquare/venues/lastcheckins')
 def lastcheckins():
+    # Change this and comminicate with Javascript
     if not 'foursquare_token' in session:
-        return render_template('city_search.html', title="Please connect to foursquare to see your last check-ins!")
+        return ""
     
     venues = squarewheel.get_last_foursquare_checkins(session['foursquare_token'])
-    venues = squarewheel.add_nodes_to_venues(venues)
-    return render_template('node_list.html', venues=venues, title="Your last check-ins")
-        
-@app.route('/todo')
+    return render_template('venue_list.html', venues=venues)
+    
+
+@app.route('/foursquare/venues/todo')
 def todo():
     if not 'foursquare_token' in session:
-        return render_template('city_search.html', title="Plase connect to foursquare to see your to-do lists!")
+        return ""
         
     venues = squarewheel.get_todo_venues(session['foursquare_token'])
-    venues = squarewheel.add_nodes_to_venues(venues)
-    return render_template('node_list.html', venues=venues, title="Your todo list")
+    return render_template('venue_list.html', venues=venues)
     
-    
+@app.route('/wheelmap/nodes')
+def get_nodes():
+    lat = request.args.get('lat', '', type=float)
+    lng = request.args.get('lng', '', type=float)
+    name = request.args.get('name', '')
+    return squarewheel.json_node_search(name, lat, lng)
+        
         
 @app.route('/foursquare')
 def foursquare_callback():

@@ -14,14 +14,14 @@
                 <li class="dropdown">
                     <a class ="dropdown-toggle" id="citydrop" data-toggle="dropdown" href="#" >Explore a City <b class="caret"></b></a>
                         <ul class="dropdown-menu" role="menu" aria-labelledby="citydrop">
-                            <li><a tabindex="-1" href="/city/berlin">Berlin</a></li>
-                            <li><a tabindex="-1" href="/city/hamburg">Hamburg</a></li>
-                            <li><a tabindex="-1" href="/city/london">London</a></li>
-                            <li><a tabindex="-1" href="/city/muenchen">München</a></li>
+                            <li><a id="exploreberlin" tabindex="-1" href="#">Berlin</a></li>
+                            <li><a id="explorehamburg" tabindex="-1" href="#">Hamburg</a></li>
+                            <li><a id="explorelondon" tabindex="-1" href="#">London</a></li>
+                            <li><a id="exploremunchen" tabindex="-1" href="#">München</a></li>
                         </ul>
                     </li>
-              <li><a href="/lastcheckins">Last Checkins</a></li>
-              <li><a href="/todo">To Do</a></li>
+              <li><a id="lastcheckins" href="#">Last Checkins</a></li>
+              <li><a id="todo" href="#">To Do</a></li>
             </ul>
             <div class="nav pull-right">
                 {% if session['foursquare_enabled'] %}
@@ -34,14 +34,16 @@
             </div>
           </div>
         </div>
-            <h2>{{ title }}</h2>
-            {% block content %}
-                This page is intetionally left blank.
-            {% endblock %}
+            <div id="venues">
+                {% block content %}
+                    This page is intetionally left blank.
+                {% endblock %}
+            </div>
         </div>
      </div>
     <hr class="soften">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+    <script src="{{- url_for('static', filename='javascript.js')-}}"></script>
   </body>
 </html>

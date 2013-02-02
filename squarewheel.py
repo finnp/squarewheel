@@ -2,6 +2,7 @@ from urllib2 import urlopen
 import json
 import difflib
 import math
+import re
 from config import wheelmap_api_key
 from config import foursquare_client_id
 from config import foursquare_client_secret
@@ -25,6 +26,20 @@ class FoursquareVenue:
     
     def get_foursquare_venue_url(self):
         return "https://foursquare.com/v/%s" % self.foursquare_id
+        
+    def get_openstreetmap_image(self, zoom = 16):
+        (xtile, ytile) = deg2num(self.lat, self.lng, zoom)
+        uri = "http://b.tile.openstreetmap.org/%s/%s/%s.png" % (zoom, xtile, ytile)
+        return uri
+    
+    def get_map_with_marker(self):
+        html =  "<div style='position:relative'>"
+        html += "<div style='position:absolute; left:69px; top:69px;' >"
+        html += "<img src='/static/ajax-loader.gif' class='mapmarker' alt='Marker'/>"
+        html += "</div>"
+        html += "<img src='%s' alt='Map' class='img-circle'/>" % self.get_openstreetmap_image(16)
+        html += "</div>"
+        return html
                 
 class WheelmapNode:
     def __init__(self, json_node):
@@ -127,8 +142,8 @@ def get_last_foursquare_checkins(foursquare_token):
     # Form request uri
     request_uri = foursquare_api_url + "users/self/checkins" + foursquare_client_data + "&oauth_token=" + foursquare_token + foursquare_version
     
-    # Number of venues limited to 50
-    request_uri += "&limit=50"
+    # Number of venues limited to 10
+    request_uri += "&limit=10"
     
     response = urlopen(request_uri).read()
     
@@ -139,7 +154,7 @@ def get_last_foursquare_checkins(foursquare_token):
     for item in results["response"]["checkins"]["items"]:
         venue_data = FoursquareVenue( item["venue"] )
         venues.append( venue_data )
-        
+    
     return venues
 
 
@@ -147,8 +162,7 @@ def get_todo_venues(foursquare_token):
     
     request_uri = foursquare_api_url + "users/self/todos" + foursquare_client_data + "&oauth_token=" + foursquare_token + foursquare_version
     
-    # Number of venues limited to 50
-    request_uri += "&sort=recent"
+    request_uri += "&sort=recent&limit=10"
     
     response = urlopen(request_uri).read()
     
@@ -162,7 +176,7 @@ def get_todo_venues(foursquare_token):
         
     return venues
 
-def search_wheelmap (lat, lng, interval, name):
+def search_wheelmap (lat, lng, interval, name, n):
     """Searches for a place which matches the given name in the 
     given coordinates range. Returns false if nothing found"""
     
@@ -172,34 +186,27 @@ def search_wheelmap (lat, lng, interval, name):
     from_lng = lng - interval
     to_lng = lng + interval
     
+    # Remove parentheses (better for search, generally)
+    name = re.sub(r'\([^)]*\)', '', name)
+    
     wheelmap_bbox = "&bbox=%s,%s,%s,%s" % (from_lng, from_lat, to_lng, to_lat)
     
-    wheelmap_per_page = "&per_page=100"
+    wheelmap_per_page = "&per_page=%s" % n
     
     # wheelmap_q = "&q=%s" % name # for /nodes/search
     
     request_uri = wheelmap_api_url + wheelmap_bbox + wheelmap_per_page
     
-    if printstatus:
-        print "Opening %s" % request_uri
     response = urlopen(request_uri).read()
     
     results = json.loads(response)
     
-    # Basically check nearest
-    #if len(results["nodes"]) > 1:
-    #    for node in results["nodes"]:
-    #        if node["name"] == name:
-    #            return WheelmapNode(node)
-    #    return False
-    #elif len(results["nodes"]) == 1:
-    #    return WheelmapNode( results["nodes"][0] )
-    #else:
-    #    return False
-        
+    #print name
+    
     for node in results["nodes"]:
         if node["name"] and name:
             name_match = difflib.SequenceMatcher(None, node["name"], name).ratio()
+            #print node["name"], " - ", name_match
             if name_match > 0.8:
                 return WheelmapNode( node )
     return False
@@ -224,7 +231,28 @@ def add_nodes_to_venues(venues):
         if node:
             venue.wheelmap_node = node
     return venues
-    
+
+def json_node_search(name, lat, lng):
+    node = search_wheelmap(lat, lng, 0.004, name, 200)
+    json_response = {}
+    if node:
+        json_response["wheelmap"] = True 
+        json_response["id"] = node.wheelmap_id
+        json_response["name"] = node.name
+        json_response["lat"] = node.lat
+        json_response["lng"] = node.lng
+        json_response["wheelchair"] = node.wheelchair 
+        json_response["wheelchair_description"] = node.wheelchair_description
+        json_response["street"] = node.street
+        json_response["housenumber"] = node.housenumber
+        json_response["city"] = node.city
+        json_response["postcode"] = node.postcode
+        json_response["website"] = node.website
+        json_response["phone"] = node.phone 
+        json_response["node_type"] = node.node_type
+    else: 
+        json_response["wheelmap"] = False
+    return json.dumps(json_response, indent=4, separators=(',', ': '))
 
 #venues_in_hamburg = explore_foursquare("Hamburg")
 
