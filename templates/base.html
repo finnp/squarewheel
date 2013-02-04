@@ -20,8 +20,37 @@
                             <li><a id="exploremunchen" tabindex="-1" href="#">München</a></li>
                         </ul>
                     </li>
-              <li><a id="lastcheckins" href="#">Last Checkins</a></li>
-              <li><a id="todo" href="#">To Do</a></li>
+                <li><a id="lastcheckins" href="#">Last Checkins</a></li>
+                <li><a id="todo" href="#">To Do</a></li>
+                <li class="divider-vertical"></li>
+                <li>
+                    <form class="navbar-form">
+                        <label class="checkbox">
+                            <input id="checkbox-wheelchair-yes" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/yes.png">
+                        </label>
+                    </form>
+                </li>
+                <li>
+                    <form class="navbar-form">
+                        <label class="checkbox">
+                            <input id="checkbox-wheelchair-limited" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/limited.png">
+                        </label>
+                    </form>
+                </li>
+                <li>
+                    <form class="navbar-form">
+                        <label class="checkbox">
+                            <input id="checkbox-wheelchair-no" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/no.png">
+                        </label>
+                    </form>
+                </li>
+                <li>
+                    <form class="navbar-form">
+                        <label class="checkbox">
+                            <input id="checkbox-wheelchair-unknown" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/unknown.png">
+                        </label>
+                    </form>
+                </li>
             </ul>
             <div class="nav pull-right">
                 {% if session['foursquare_enabled'] %}
