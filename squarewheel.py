@@ -124,6 +124,8 @@ def explore_foursquare(near):
     # Form request uri
     request_uri = foursquare_api_url + "venues/explore" + foursquare_client_data + "&near=" + near
     
+    request_uri += "&limit=10"
+    
     response = urlopen(request_uri).read()
     
     results = json.loads(response)
@@ -225,13 +227,6 @@ def get_foursquare_user(foursquare_token):
     
     return (user["firstName"], user["photo"]["icon"])
     
-def add_nodes_to_venues(venues):
-    for venue in venues:
-        node = search_wheelmap(venue.lat, venue.lng, 0.0004, venue.name) 
-        if node:
-            venue.wheelmap_node = node
-    return venues
-
 def json_node_search(name, lat, lng):
     node = search_wheelmap(lat, lng, 0.004, name, 200)
     json_response = {}
@@ -253,10 +248,3 @@ def json_node_search(name, lat, lng):
     else: 
         json_response["wheelmap"] = False
     return json.dumps(json_response, indent=4, separators=(',', ': '))
-
-#venues_in_hamburg = explore_foursquare("Hamburg")
-
-#for venue in venues_in_hamburg:
-#    node = search_wheelmap(venue.lat, venue.lng, 0.0003, venue.name)
-#    if node:
-#        print node.name, "-for-", venue.name
