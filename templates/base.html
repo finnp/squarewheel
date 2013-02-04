@@ -27,7 +27,7 @@
                 {% if session['foursquare_enabled'] %}
                     <img alt="user" class="img-rounded" src="{{ session['foursquare_icon'] }}"></img>{{ session['foursquare_firstname'] }}
                 {% else %}
-                    <a href="https://foursquare.com/oauth2/authenticate?client_id=NDCD5IGLUHKM2D3NIKE2SVKAVPQE23N4AMMGTVV1YGVB1VGT&response_type=code&redirect_uri=http://84.253.207.251:5000/foursquare">
+                    <a href="https://foursquare.com/oauth2/authenticate?client_id={{- client_id -}}&response_type=code&redirect_uri={{- callback_url -}}">
                         <img alt="Login with Foursquare" src="https://playfoursquare.s3.amazonaws.com/press/logo/connect-blue.png"></img>
                     </a>
                 {% endif %}

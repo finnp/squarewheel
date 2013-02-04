@@ -5,6 +5,8 @@ from flask import session
 from urllib2 import urlopen
 import json
 import squarewheel
+from config import foursquare_client_id 
+from config import foursquare_callback_url
 
 app = Flask(__name__)
 
@@ -24,7 +26,7 @@ def before_request():
 
 @app.route('/')
 def startpage():
-    return render_template('city_search.html', title="Welcome!")
+    return render_template('city_search.html', title="Welcome!", client_id = foursquare_client_id, callback_url = foursquare_callback_url)
     
 @app.route('/foursquare/venues/explore/<city>')
 def explore_city(city):
