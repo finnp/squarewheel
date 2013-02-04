@@ -28,7 +28,7 @@
                     <img alt="user" class="img-rounded" src="{{ session['foursquare_icon'] }}"></img>{{ session['foursquare_firstname'] }}
                 {% else %}
                     <a href="https://foursquare.com/oauth2/authenticate?client_id={{- client_id -}}&response_type=code&redirect_uri={{- callback_url -}}">
-                        <img alt="Login with Foursquare" src="https://playfoursquare.s3.amazonaws.com/press/logo/connect-blue.png"></img>
+                        <button class="btn btn-primary" type="button">Login with <img src="{{- url_for('static', filename='foursquare-login.png') -}}"></button>
                     </a>
                 {% endif %}
             </div>
