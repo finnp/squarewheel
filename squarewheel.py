@@ -203,15 +203,19 @@ def search_wheelmap (lat, lng, interval, name, n):
     
     results = json.loads(response)
     
-    #print name
+    max_name_match = 0.0
     
     for node in results["nodes"]:
         if node["name"] and name:
             name_match = difflib.SequenceMatcher(None, node["name"], name).ratio()
-            #print node["name"], " - ", name_match
-            if name_match > 0.8:
-                return WheelmapNode( node )
-    return False
+            if name_match > max_name_match:
+                max_node = node
+                max_name_match = name_match
+                
+    if max_name_match > 0.6:
+        return  WheelmapNode( max_node )
+    else:
+        return False
 
 def get_foursquare_user(foursquare_token):
     """Takes the foursquare token for the user and returns the username and an icon as a tupel"""
@@ -232,7 +236,7 @@ def json_node_search(name, lat, lng):
     json_response = {}
     if node:
         json_response["wheelmap"] = True 
-        json_response["id"] = node.wheelmap_id
+        json_response["wheelmap_id"] = node.wheelmap_id
         json_response["name"] = node.name
         json_response["lat"] = node.lat
         json_response["lng"] = node.lng
