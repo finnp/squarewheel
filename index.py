@@ -3,6 +3,7 @@ from flask import render_template
 from flask import request
 from flask import session
 from urllib2 import urlopen
+import os
 import json
 import squarewheel
 from config import foursquare_client_id 
@@ -90,5 +91,7 @@ if __name__ == '__main__':
     if app.debug:
         app.run()
     else:
-        app.run(host='0.0.0.0')
+        # Bind to PORT if defined, otherwise default to 5000.
+        port = int(os.environ.get('PORT', 5000))
+        app.run(host='0.0.0.0', port=port)
     
