@@ -25,29 +25,36 @@
                 <li class="divider-vertical"></li>
                 <li>
                     <form class="navbar-form">
-                        <label class="checkbox">
-                            <input id="checkbox-wheelchair-yes" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/yes.png">
+                        <label id="label-wheelchair-yes" class="checkbox">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "yes" id="checkbox-wheelchair-yes" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/yes.png">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
-                        <label class="checkbox">
-                            <input id="checkbox-wheelchair-limited" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/limited.png">
+                        <label id="label-wheelchair-limited" class="checkbox">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "limited" id="checkbox-wheelchair-limited" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/limited.png">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
-                        <label class="checkbox">
-                            <input id="checkbox-wheelchair-no" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/no.png">
+                        <label id="label-wheelchair-no" class="checkbox">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "no" id="checkbox-wheelchair-no" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/no.png">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
-                        <label class="checkbox">
-                            <input id="checkbox-wheelchair-unknown" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/unknown.png">
+                        <label id="label-wheelchair-unknown" class="checkbox">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "unknown" id="checkbox-wheelchair-unknown" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/unknown.png">
+                        </label>
+                    </form>
+                </li>
+               <li>
+                    <form class="navbar-form">
+                        <label id="label-wheelchair-notfound" class="checkbox">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "notfound" id="checkbox-wheelchair-notfound" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/notfound.png') -}}">
                         </label>
                     </form>
                 </li>
@@ -68,7 +75,9 @@
                     This page is intetionally left blank.
                 {% endblock %}
             </div>
-        </div>
+            <div style="display:none" id="loadmorevenues">
+                <button id="loadmorevenues-button" class="btn btn-primary">Load more <i class="icon-circle-arrow-down icon-white"></i></button>
+            </div>
      </div>
     <hr class="soften">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>

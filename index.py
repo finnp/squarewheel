@@ -27,29 +27,31 @@ def before_request():
 
 @app.route('/')
 def startpage():
-    return render_template('city_search.html', title="Welcome!", client_id = foursquare_client_id, callback_url = foursquare_callback_url)
-    
-@app.route('/foursquare/venues/explore/<city>')
-def explore_city(city):
-    venues = squarewheel.explore_foursquare(city)
+    return render_template('start.html', client_id = foursquare_client_id, callback_url = foursquare_callback_url)
+
+@app.route('/foursquare/venues/explore/<city>', defaults={'page': 0})
+@app.route('/foursquare/venues/explore/<city>/<int:page>')
+def explore_city(city, page):
+    venues = squarewheel.explore_foursquare(city, page)
     return render_template('venue_list.html', venues=venues)
 
-@app.route('/foursquare/venues/lastcheckins')
-def lastcheckins():
+@app.route('/foursquare/venues/lastcheckins', defaults={'page': 0})
+@app.route('/foursquare/venues/lastcheckins/<int:page>')
+def lastcheckins(page):
     # Change this and comminicate with Javascript
     if not 'foursquare_token' in session:
         return ""
     
-    venues = squarewheel.get_last_foursquare_checkins(session['foursquare_token'])
+    venues = squarewheel.get_last_foursquare_checkins(session['foursquare_token'], page)
     return render_template('venue_list.html', venues=venues)
     
-
-@app.route('/foursquare/venues/todo')
-def todo():
+@app.route('/foursquare/venues/todo', defaults={'page': 0})
+@app.route('/foursquare/venues/todo/<int:page>')
+def todo(page):
     if not 'foursquare_token' in session:
         return ""
         
-    venues = squarewheel.get_todo_venues(session['foursquare_token'])
+    venues = squarewheel.get_todo_venues(session['foursquare_token'], page)
     return render_template('venue_list.html', venues=venues)
     
 @app.route('/wheelmap/nodes')
@@ -74,7 +76,7 @@ def foursquare_callback():
     session['foursquare_token'] = token
     (session['foursquare_firstname'], session['foursquare_icon']) = squarewheel.get_foursquare_user(token)
     session['foursquare_enabled'] = True
-    return render_template('city_search.html', title="Your account is connected, start browsing!")
+    return render_template('start.html')
 
 @app.route('/disconnect')
 def foursquare_disconnect():

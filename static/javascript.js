@@ -6,20 +6,49 @@ $(document).ready(function() {
     $("a#lastcheckins").click(function() { load_venues('lastcheckins') });
     $("a#todo").click(function() { load_venues('todo') });
     
-    $("#checkbox-wheelchair-unknown").click(function(){$(".wheelchair-unknown").toggle();} );
-    $("#checkbox-wheelchair-yes").click(function(){$(".wheelchair-yes").toggle();} );
-    $("#checkbox-wheelchair-no").click(function(){$(".wheelchair-no").toggle();} );
-    $("#checkbox-wheelchair-limited").click(function(){$(".wheelchair-limited").toggle();} );
+    
+    $(".wheelchair-filter-checkbox").each(function() {
+            $(this).click(update_filter);
+    });
+    
+    $("#label-wheelchair-unknown").tooltip({title: "Not rated on wheelmap", placement: "bottom"})
+    $("#label-wheelchair-yes").tooltip({title: "Rated as fully wheelchair accesible", placement: "bottom"})
+    $("#label-wheelchair-no").tooltip({title: "Rated as not wheelchair accesible", placement: "bottom"})
+    $("#label-wheelchair-limited").tooltip({title: "Rated as limited wheelchair accesible", placement: "bottom"})   
+    $("#label-wheelchair-notfound").tooltip({title: "Venue not found on wheelmap", placement: "right"})
+    
+    $('#loadmorevenues-button').click(function(){ 
+        load_venues( $(this).data("current-url"), $(this).data("next-page") );
+    });
     
 });
 
-var load_venues = function(url) {
-    $('#venues').html("Loading venues from foursquare... <br/><img alt='Loading' src='/static/ajax-loader-big.gif'/>");
+var load_venues = function(url, page) {
+    if ( typeof page == "undefined" ) 
+        page = 0
+
+    // For the first page, clear the screen
+    if ( page == 0 )
+        $('#venues').html("")
+        
+    $load_div = $("<div>Loading venues from foursquare... <br/><img alt='Loading' src='/static/ajax-loader-big.gif'/><hr class='soften'></div>");
+    
+    $('#venues').append($load_div);
+        
     $.ajax({
-        url: "/foursquare/venues/" + url,
+        url: "/foursquare/venues/" + url + "/" + page,
         success: function( html ) {
-            $('#venues').html(html);
-            load_wheelmap_info()
+            $('#venues').append(html);
+            $('#loadmorevenues').show();
+            $('#loadmorevenues-button').data("next-page", ++page);
+            $('#loadmorevenues-button').data("current-url", url);
+            load_wheelmap_info();
+        },
+        error: function() {
+            $('#venues').append("<p>There was a problem. We couldn't reach foursquare, sorry!</p>");
+        },
+        complete: function() {
+            $load_div.remove();
         }
     });
 }
@@ -40,17 +69,35 @@ var load_wheelmap_info = function() {
             if ( r.wheelmap ) {
                 $(div).addClass("wheelchair-" + r.wheelchair);
                 $(div).find('.nodeheadline').html(r.name);
-                $(div).find('.wheelmapinfo>p').html("<a href='http://wheelmap.org/nodes/" + r.wheelmap_id + "'>Wheelmap</a><br/>Wheelchair: " + r.wheelchair + "<br>Description: " + r.wheelchair_description);
-                $(div).find('.map img.mapmarker').attr("src", "http://wheelmap.org/marker/" + r.wheelchair + ".png")
+                $(div).find('.wheelmapinfo>p').html("<a href='/static/img/" + r.wheelmap_id + "'>Wheelmap</a><br/>Wheelchair: " + r.wheelchair + "<br>Description: " + r.wheelchair_description);
+                $(div).find('.map img.mapmarker').attr("src", "/static/img/" + r.wheelchair + ".png");
             } else {
-                $(div).addClass("wheelchair-unknown");
+                $(div).addClass("wheelchair-notfound");
                 $(div).find('.nodeheadline').html("Not found on wheelmap");
                 $(div).find('.wheelmapinfo>p').html("Look for it yourself on <a href='http://wheelmap.org/en/?lat="+$(div).data('lat')+"&lon="+$(div).data('lng')+"&zoom=17'>wheelmap</a>");
-                $(div).find('.map img.mapmarker').attr("src", "http://wheelmap.org/marker/unknown.png")
+                $(div).find('.map img.mapmarker').attr("src", "/static/img/notfound.png");
             }
+            // Hide the ones, that are not wanted
+            update_filter();
+        },
+        error: function() {
+            $(div).find('.nodeheadline').html("Error: There was a problem contacting wheelmap.");
         }
         });  
     });
 };
+
+var update_filter = function () {
+    // Function for filtering the results by wheelchair status
+    
+    $(".wheelchair-filter-checkbox").each(function() {
+        wheelchair_status = $(this).data("wheelchair")
+        if ( $(this).is(":checked") ) {
+            $(".wheelchair-" + wheelchair_status).show();
+        } else {
+            $(".wheelchair-" + wheelchair_status).hide();
+        }
+    });
+}
 
 

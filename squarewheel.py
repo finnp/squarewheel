@@ -119,12 +119,14 @@ def deg2num(lat_deg, lon_deg, zoom):
   ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
   return (xtile, ytile)
         
-def explore_foursquare(near):
+def explore_foursquare(near, page = 0):
+    
+    per_page = 10
     
     # Form request uri
     request_uri = foursquare_api_url + "venues/explore" + foursquare_client_data + "&near=" + near
     
-    request_uri += "&limit=10"
+    request_uri += "&limit=%s&offset=%s" % (per_page, page * per_page)
     
     response = urlopen(request_uri).read()
     
@@ -138,14 +140,16 @@ def explore_foursquare(near):
         
     return venues
     
-def get_last_foursquare_checkins(foursquare_token):
+def get_last_foursquare_checkins(foursquare_token, page = 0):
     
     # https://developer.foursquare.com/docs/users/checkins
     # Form request uri
     request_uri = foursquare_api_url + "users/self/checkins" + foursquare_client_data + "&oauth_token=" + foursquare_token + foursquare_version
     
+    per_page = 10
+    
     # Number of venues limited to 10
-    request_uri += "&limit=10"
+    request_uri += "&limit=%s&offset=%s" % (per_page, page * per_page)
     
     response = urlopen(request_uri).read()
     
@@ -160,11 +164,13 @@ def get_last_foursquare_checkins(foursquare_token):
     return venues
 
 
-def get_todo_venues(foursquare_token):
+def get_todo_venues(foursquare_token, page = 0):
     
     request_uri = foursquare_api_url + "users/self/todos" + foursquare_client_data + "&oauth_token=" + foursquare_token + foursquare_version
     
-    request_uri += "&sort=recent&limit=10"
+    per_page = 10
+    
+    request_uri += "&sort=recent&limit=%s&offset=%s" % (per_page, page * per_page)
     
     response = urlopen(request_uri).read()
     
