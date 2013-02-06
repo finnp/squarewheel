@@ -14,46 +14,46 @@
                 <li class="dropdown">
                     <a class ="dropdown-toggle" id="citydrop" data-toggle="dropdown" href="#" >Explore a City <b class="caret"></b></a>
                         <ul class="dropdown-menu" role="menu" aria-labelledby="citydrop">
-                            <li><a id="exploreberlin" tabindex="-1" href="#">Berlin</a></li>
-                            <li><a id="explorehamburg" tabindex="-1" href="#">Hamburg</a></li>
-                            <li><a id="explorelondon" tabindex="-1" href="#">London</a></li>
-                            <li><a id="exploremunchen" tabindex="-1" href="#">München</a></li>
+                            <li><a class="load-venues-link" tabindex="-1" href="explore/berlin">Berlin</a></li>
+                            <li><a class="load-venues-link" tabindex="-1" href="explore/hamburg">Hamburg</a></li>
+                            <li><a class="load-venues-link" tabindex="-1" href="explore/london">London</a></li>
+                            <li><a class="load-venues-link" tabindex="-1" href="explore/muenchen">München</a></li>
                         </ul>
                     </li>
-                <li><a id="lastcheckins" href="#">Last Checkins</a></li>
-                <li><a id="todo" href="#">To Do</a></li>
+                <li><a class="load-venues-link" href="lastcheckins">Last Checkins</a></li>
+                <li><a class="load-venues-link" href="todo">To Do</a></li>
                 <li class="divider-vertical"></li>
                 <li>
                     <form class="navbar-form">
-                        <label id="label-wheelchair-yes" class="checkbox">
+                        <label title="Rated as fully wheelchair accesible" data-placement="bottom"  rel="tooltip" class="checkbox">
                             <input class="wheelchair-filter-checkbox" data-wheelchair = "yes" id="checkbox-wheelchair-yes" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/yes.png">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
-                        <label id="label-wheelchair-limited" class="checkbox">
+                        <label title="Rated as limited wheelchair accesible" data-placement="bottom" rel="tooltip" class="checkbox">
                             <input class="wheelchair-filter-checkbox" data-wheelchair = "limited" id="checkbox-wheelchair-limited" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/limited.png">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
-                        <label id="label-wheelchair-no" class="checkbox">
+                        <label title="Rated as not wheelchair accesible" data-placement="bottom"  rel="tooltip" class="checkbox">
                             <input class="wheelchair-filter-checkbox" data-wheelchair = "no" id="checkbox-wheelchair-no" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/no.png">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
-                        <label id="label-wheelchair-unknown" class="checkbox">
+                        <label title="Not rated on wheelmap" data-placement="bottom"  rel="tooltip" class="checkbox">
                             <input class="wheelchair-filter-checkbox" data-wheelchair = "unknown" id="checkbox-wheelchair-unknown" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/unknown.png">
                         </label>
                     </form>
                 </li>
                <li>
                     <form class="navbar-form">
-                        <label id="label-wheelchair-notfound" class="checkbox">
+                        <label title="Venue not found on wheelmap" data-placement="right"  rel="tooltip" class="checkbox">
                             <input class="wheelchair-filter-checkbox" data-wheelchair = "notfound" id="checkbox-wheelchair-notfound" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/notfound.png') -}}">
                         </label>
                     </form>
