@@ -23,7 +23,7 @@ var load_venues = function(url, page) {
     if ( page == 0 )
         $('#venues').html("")
         
-    $load_div = $("<div>Loading venues from foursquare... <br/><img alt='Loading' src='/static/ajax-loader-big.gif'/><hr class='soften'></div>");
+    $load_div = $("<div>Loading venues from foursquare... <br/><img alt='Loading' src='/static/img/ajax-loader-big.gif'/><hr class='soften'></div>");
     
     $('#venues').append($load_div);
         

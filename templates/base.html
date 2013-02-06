@@ -26,28 +26,28 @@
                 <li>
                     <form class="navbar-form">
                         <label title="Rated as fully wheelchair accesible" data-placement="bottom"  rel="tooltip" class="checkbox">
-                            <input class="wheelchair-filter-checkbox" data-wheelchair = "yes" id="checkbox-wheelchair-yes" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/yes.png">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "yes" id="checkbox-wheelchair-yes" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/yes.png') -}}">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
                         <label title="Rated as limited wheelchair accesible" data-placement="bottom" rel="tooltip" class="checkbox">
-                            <input class="wheelchair-filter-checkbox" data-wheelchair = "limited" id="checkbox-wheelchair-limited" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/limited.png">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "limited" id="checkbox-wheelchair-limited" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/limited.png') -}}">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
                         <label title="Rated as not wheelchair accesible" data-placement="bottom"  rel="tooltip" class="checkbox">
-                            <input class="wheelchair-filter-checkbox" data-wheelchair = "no" id="checkbox-wheelchair-no" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/no.png">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "no" id="checkbox-wheelchair-no" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/no.png') -}}">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
                         <label title="Not rated on wheelmap" data-placement="bottom"  rel="tooltip" class="checkbox">
-                            <input class="wheelchair-filter-checkbox" data-wheelchair = "unknown" id="checkbox-wheelchair-unknown" type="checkbox" checked="checked"><img src="http://wheelmap.org/marker/unknown.png">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "unknown" id="checkbox-wheelchair-unknown" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/unknown.png') -}}">
                         </label>
                     </form>
                 </li>
@@ -64,7 +64,7 @@
                     <img alt="user" class="img-rounded" src="{{ session['foursquare_icon'] }}"></img>{{ session['foursquare_firstname'] }}
                 {% else %}
                     <a href="https://foursquare.com/oauth2/authenticate?client_id={{- client_id -}}&response_type=code&redirect_uri={{- callback_url -}}">
-                        <button class="btn btn-primary btn-info" type="button">Login with <img src="{{- url_for('static', filename='foursquare-login.png') -}}"></button>
+                        <button class="btn btn-primary btn-info" type="button">Login with <img src="{{- url_for('static', filename='img/foursquare-login.png') -}}"></button>
                     </a>
                 {% endif %}
             </div>
@@ -82,6 +82,6 @@
     <hr class="soften">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
-    <script src="{{- url_for('static', filename='javascript.js')-}}"></script>
+    <script src="{{- url_for('static', filename='js/javascript.js')-}}"></script>
   </body>
 </html>
