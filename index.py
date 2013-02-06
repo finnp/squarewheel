@@ -8,6 +8,7 @@ import json
 import squarewheel
 from config import foursquare_client_id 
 from config import foursquare_callback_url
+from config import flask_secret_key
 
 app = Flask(__name__)
 
@@ -85,7 +86,7 @@ def foursquare_disconnect():
     session.pop('foursquare_enabled', None)
     return "Session cleared"
 
-app.secret_key = "\xfa\xdek\xfc\xce\xa5\x07I\xa1\xf6\xe2a\x08\xf4I\x92Ye\xdd\x15\x98h8n"
+app.secret_key = flask_secret_key
 
 if __name__ == '__main__':
     app.debug = True
