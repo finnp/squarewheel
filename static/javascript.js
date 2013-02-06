@@ -1,21 +1,13 @@
 $(document).ready(function() {
-    $("a#exploreberlin").click(function() { load_venues('explore/berlin') });
-    $("a#explorehamburg").click(function() { load_venues('explore/hamburg') });
-    $("a#explorelondon").click(function() { load_venues('explore/london') });
-    $("a#exploremuenchen").click(function() { load_venues('explore/muenchen') });
-    $("a#lastcheckins").click(function() { load_venues('lastcheckins') });
-    $("a#todo").click(function() { load_venues('todo') });
     
-    
-    $(".wheelchair-filter-checkbox").each(function() {
-            $(this).click(update_filter);
+    $(".load-venues-link").click(function(e) {
+            e.preventDefault();
+            load_venues( $(this).attr('href') );
     });
+      
+    $(".wheelchair-filter-checkbox").click( update_filter );
     
-    $("#label-wheelchair-unknown").tooltip({title: "Not rated on wheelmap", placement: "bottom"})
-    $("#label-wheelchair-yes").tooltip({title: "Rated as fully wheelchair accesible", placement: "bottom"})
-    $("#label-wheelchair-no").tooltip({title: "Rated as not wheelchair accesible", placement: "bottom"})
-    $("#label-wheelchair-limited").tooltip({title: "Rated as limited wheelchair accesible", placement: "bottom"})   
-    $("#label-wheelchair-notfound").tooltip({title: "Venue not found on wheelmap", placement: "right"})
+    $("[rel='tooltip']").tooltip();
     
     $('#loadmorevenues-button').click(function(){ 
         load_venues( $(this).data("current-url"), $(this).data("next-page") );
