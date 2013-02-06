@@ -8,7 +8,8 @@ from config import foursquare_client_id
 from config import foursquare_client_secret
 from config import foursquare_callback_url
 
-wheelmap_api_url = "http://wheelmap.org/api/nodes?api_key=%s" % wheelmap_api_key
+wheelmap_api_url = "http://wheelmap.org/api/" 
+wheelmap_api_data = "?api_key=%s" % wheelmap_api_key
 
 foursquare_version = "&v=20130128"
 foursquare_api_url = "https://api.foursquare.com/v2/"
@@ -119,67 +120,51 @@ def deg2num(lat_deg, lon_deg, zoom):
   ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
   return (xtile, ytile)
         
-def explore_foursquare(near, page = 0):
+def explore_foursquare(foursquare_client, near, page = 0):
     
     per_page = 10
     
-    # Form request uri
-    request_uri = foursquare_api_url + "venues/explore" + foursquare_client_data + "&near=" + near
+    params = {'limit': per_page, 'offset': page * per_page, 'near': near}
     
-    request_uri += "&limit=%s&offset=%s" % (per_page, page * per_page)
-    
-    response = urlopen(request_uri).read()
-    
-    results = json.loads(response)
+    results = foursquare_client.venues.explore(params=params)
     
     venues = []
     
-    for item in results["response"]["groups"][0]["items"]:
+    for item in results["groups"][0]["items"]:
         venue_data = FoursquareVenue( item["venue"] )
         venues.append( venue_data )
         
     return venues
     
-def get_last_foursquare_checkins(foursquare_token, page = 0):
-    
-    # https://developer.foursquare.com/docs/users/checkins
-    # Form request uri
-    request_uri = foursquare_api_url + "users/self/checkins" + foursquare_client_data + "&oauth_token=" + foursquare_token + foursquare_version
+def get_last_foursquare_checkins(foursquare_client, page = 0):
     
     per_page = 10
     
-    # Number of venues limited to 10
-    request_uri += "&limit=%s&offset=%s" % (per_page, page * per_page)
+    params = {'limit': per_page, 'offset': page * per_page}
     
-    response = urlopen(request_uri).read()
-    
-    results = json.loads(response)
+    results = foursquare_client.users.checkins(params=params)
     
     venues = []
     
-    for item in results["response"]["checkins"]["items"]:
+    for item in results["checkins"]["items"]:
         venue_data = FoursquareVenue( item["venue"] )
         venues.append( venue_data )
     
     return venues
 
 
-def get_todo_venues(foursquare_token, page = 0):
-    
-    request_uri = foursquare_api_url + "users/self/todos" + foursquare_client_data + "&oauth_token=" + foursquare_token + foursquare_version
+def get_todo_venues(foursquare_client, page = 0):
     
     per_page = 10
     
-    request_uri += "&sort=recent&limit=%s&offset=%s" % (per_page, page * per_page)
+    params = {'limit': per_page, 'offset': page * per_page}
     
-    response = urlopen(request_uri).read()
-    
-    results = json.loads(response)
+    results = foursquare_client.lists("self/todos", params=params)
     
     venues = []
     
-    for item in results["response"]["todos"]["items"]:
-        venue_data = FoursquareVenue( item["tip"]["venue"] )
+    for item in results["list"]["listItems"]["items"]:
+        venue_data = FoursquareVenue( item["venue"] )
         venues.append( venue_data )
         
     return venues
@@ -203,7 +188,7 @@ def search_wheelmap (lat, lng, interval, name, n):
     
     # wheelmap_q = "&q=%s" % name # for /nodes/search
     
-    request_uri = wheelmap_api_url + wheelmap_bbox + wheelmap_per_page
+    request_uri = wheelmap_api_url + "nodes" + wheelmap_api_data + wheelmap_bbox + wheelmap_per_page
     
     response = urlopen(request_uri).read()
     
@@ -223,15 +208,10 @@ def search_wheelmap (lat, lng, interval, name, n):
     else:
         return False
 
-def get_foursquare_user(foursquare_token):
+def get_foursquare_user(foursquare_client):
     """Takes the foursquare token for the user and returns the username and an icon as a tupel"""
-    request_uri = foursquare_api_url + "users/self" + foursquare_client_data + "&oauth_token=" + foursquare_token + foursquare_version
     
-    response = urlopen(request_uri).read()
-    
-    results = json.loads(response)
-    
-    user = results["response"]["user"]
+    user = foursquare_client.users()["user"]
     
     user["photo"]["icon"] = user["photo"]["prefix"] + "36x36" + user["photo"]["suffix"]
     
@@ -258,3 +238,11 @@ def json_node_search(name, lat, lng):
     else: 
         json_response["wheelmap"] = False
     return json.dumps(json_response, indent=4, separators=(',', ': '))
+    
+def update_wheelchair_status(node_id, wheelchair_status):
+    request_path = "nodes/{node_id}/update_wheelchair" % node_id
+    url = wheelmap_api_url + request_path + wheelmap_api_data 
+    url += "&wheelchair=%s" % wheelchair_status
+    
+    # Neeed something to make a PUT request
+    
