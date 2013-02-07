@@ -61,7 +61,7 @@ var load_wheelmap_info = function() {
             if ( r.wheelmap ) {
                 $(div).addClass("wheelchair-" + r.wheelchair);
                 $(div).find('.nodeheadline').html(r.name);
-                $(div).find('.wheelmapinfo>p').html("<a href='/static/img/" + r.wheelmap_id + "'>Wheelmap</a><br/>Wheelchair: " + r.wheelchair + "<br>Description: " + r.wheelchair_description);
+                $(div).find('.wheelmapinfo>p').html("<a href='http://wheelmap.org/en/nodes/" + r.wheelmap_id + "'>Wheelmap</a><br/>Wheelchair: " + r.wheelchair + " <a class='edit-wheelchair-status' href='#'>[Edit]</a><br>Description: " + r.wheelchair_description);
                 $(div).find('.map img.mapmarker').attr("src", "/static/img/" + r.wheelchair + ".png");
             } else {
                 $(div).addClass("wheelchair-notfound");
@@ -71,6 +71,7 @@ var load_wheelmap_info = function() {
             }
             // Hide the ones, that are not wanted
             update_filter();
+            add_edit_popovers();
         },
         error: function() {
             $(div).find('.nodeheadline').html("Error: There was a problem contacting wheelmap.");
@@ -92,4 +93,23 @@ var update_filter = function () {
     });
 }
 
-
+var add_edit_popovers = function() {
+    html = "<form class='form-horizontal'><div class='control-group'>";
+    html += "<label class='radio'><input type='radio' name='weelchair-status-change' value='yes' checked>wheelchair accessible</label>";
+    html += "<label class='radio'><input type='radio' name='weelchair-status-change' value='limited'>partly wheelchair accessible</label>";
+    html += "<label class='radio'><input type='radio' name='weelchair-status-change' value='no'>not wheelchair accessible</label>";
+    html += "<label class='radio'><input type='radio' name='weelchair-status-change' value='unknown'>unknown status</label>";
+    html += "</div></form>";
+    html += "<button class='btn cancel'>Cancel</button> <button class='btn btn-primary'>Update</button>"
+    
+        
+    $(".edit-wheelchair-status").each(function(){
+        $this = $(this)
+        $(this).popover({html: true, title: "Wheelchair accessible?", content: html});
+        $(this).click(function(e){ 
+            e.preventDefault();
+            $(this).popover("show"); 
+        });
+    });
+    
+}
