@@ -3,6 +3,7 @@ import json
 import difflib
 import math
 import re
+import wheelmap
 from config import wheelmap_api_key
 from config import foursquare_client_id
 from config import foursquare_client_secret
@@ -41,75 +42,6 @@ class FoursquareVenue:
         html += "<img src='%s' alt='Map' class='img-circle'/>" % self.get_openstreetmap_image(16)
         html += "</div>"
         return html
-                
-class WheelmapNode:
-    def __init__(self, json_node):
-        self.wheelmap_id = json_node["id"]
-        self.name = json_node["name"]
-        self.lat = json_node["lat"]
-        self.lng = json_node["lon"]
-        self.wheelchair = json_node["wheelchair"]
-        self.wheelchair_description = json_node["wheelchair_description"]
-        self.street = json_node["street"]
-        self.housenumber = json_node["housenumber"]
-        self.city = json_node["city"]
-        self.postcode = json_node["postcode"]
-        self.website = json_node["website"]
-        self.phone = json_node["phone"]
-        self.node_type = json_node["node_type"]["identifier"]
-        
-    def get_wheelmap_node_url(self):
-        return "http://wheelmap.org/nodes/%s" % self.wheelmap_id
-    
-    def get_wheelmap_map_url(self, zoom = 18):
-        return "http://wheelmap.org/en/?lat=%s&lon=%szoom=%s" % (self.lat, self.lng, zoom)
-        
-    def get_openstreetmap_node_url(self):
-        return "http://www.openstreetmap.org/browse/node/%s" % self.wheelmap_id
-        
-    def get_openstreetmap_map_url(self):
-        return "http://www.openstreetmap.org/?node=%s" % self.wheelmap_id
-    
-    def get_color_coded_icon(self):
-        return "http://wheelmap.org/marker/%s.png" % (self.wheelchair)
-    
-    def get_html_address(self):
-        html = ""
-        if self.street:
-            html += self.street
-            if self.housenumber:
-                html += " " + self.housenumber
-            html += "<br/>"
-        if self.city:
-            if self.postcode:
-                html += self.postcode + " "
-            html += self.city + "<br/>"  
-        return html
-    
-    def get_googlemaps_image(self, width = 200, height = 200):
-        uri = "http://maps.googleapis.com/maps/api/staticmap?zoom=15&size=%sx%s&sensor=false" % (width, height)
-        uri += "&markers=icon:%s|%s,%s" % (self.get_color_coded_icon(), self.lat, self.lng)
-        return uri
-    
-    def get_mapquest_image(self, zoom = 16):
-        (xtile, ytile) = deg2num(self.lat, self.lng, zoom)
-        uri = "http://otile3.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg" % (zoom, xtile, ytile)
-        return uri
-    
-    def get_openstreetmap_image(self, zoom = 16):
-        (xtile, ytile) = deg2num(self.lat, self.lng, zoom)
-        uri = "http://b.tile.openstreetmap.org/%s/%s/%s.png" % (zoom, xtile, ytile)
-        return uri
-    
-    def get_map_with_marker(self):
-        html =  "<div style='position:relative'>"
-        html += "<div style='position:absolute; left:69px; top:69px;' >"
-        html += "<img src='%s' alt='Marker'/>" % self.get_color_coded_icon()
-        html += "</div>"
-        html += "<img src='%s' alt='Map' class='img-circle'/>" % self.get_openstreetmap_image(16)
-        html += "</div>"
-        return html
-        
         
             
 # By OpenStreetMap
@@ -182,29 +114,23 @@ def search_wheelmap (lat, lng, interval, name, n):
     # Remove parentheses (better for search, generally)
     name = re.sub(r'\([^)]*\)', '', name)
     
-    wheelmap_bbox = "&bbox=%s,%s,%s,%s" % (from_lng, from_lat, to_lng, to_lat)
+    wheelmap_client = wheelmap.Wheelmap(wheelmap_api_key)
     
-    wheelmap_per_page = "&per_page=%s" % n
+    bbox= (from_lng, from_lat, to_lng, to_lat)
     
-    # wheelmap_q = "&q=%s" % name # for /nodes/search
-    
-    request_uri = wheelmap_api_url + "nodes" + wheelmap_api_data + wheelmap_bbox + wheelmap_per_page
-    
-    response = urlopen(request_uri).read()
-    
-    results = json.loads(response)
+    nodes = wheelmap_client.nodes_collection(bbox=bbox, per_page=n)    
     
     max_name_match = 0.0
     
-    for node in results["nodes"]:
-        if node["name"] and name:
-            name_match = difflib.SequenceMatcher(None, node["name"], name).ratio()
+    for node in nodes:
+        if node.name and name:
+            name_match = difflib.SequenceMatcher(None, node.name, name).ratio()
             if name_match > max_name_match:
                 max_node = node
                 max_name_match = name_match
-                
+    
     if max_name_match > 0.6:
-        return  WheelmapNode( max_node )
+        return max_node
     else:
         return False
 
@@ -222,7 +148,7 @@ def json_node_search(name, lat, lng):
     json_response = {}
     if node:
         json_response["wheelmap"] = True 
-        json_response["wheelmap_id"] = node.wheelmap_id
+        json_response["wheelmap_id"] = node.node_id
         json_response["name"] = node.name
         json_response["lat"] = node.lat
         json_response["lng"] = node.lng
@@ -240,9 +166,6 @@ def json_node_search(name, lat, lng):
     return json.dumps(json_response, indent=4, separators=(',', ': '))
     
 def update_wheelchair_status(node_id, wheelchair_status):
-    request_path = "nodes/{node_id}/update_wheelchair" % node_id
-    url = wheelmap_api_url + request_path + wheelmap_api_data 
-    url += "&wheelchair=%s" % wheelchair_status
-    
-    # Neeed something to make a PUT request
+    wheelmap_client = wheelmap.Wheelmap(wheelmap_api_key)
+    return wheelmap_client.nodes_update_wheelchair(node_id=node_id, wheelchair=wheelchair_status)
     
