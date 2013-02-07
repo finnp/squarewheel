@@ -49,10 +49,10 @@ class Wheelmap:
         else:
             endpoint = "nodes/{}/update_wheelchair".format(node_id)
         
-        params = {wheelchair: wheelchair}
+        params = {'wheelchair': wheelchair}
         
         r = self.request(endpoint, "PUT", params=params)
-        
+                      
         if "message" in r:
             return True
         else:

@@ -96,6 +96,15 @@ def foursquare_disconnect():
     session.pop('foursquare_enabled', None)
     return "Session cleared"
 
+@app.route('/wheelmap/update_node/<node_id>/<wheelchair_status>')
+def wheelmap_update_node(node_id, wheelchair_status):
+    # Works but maybe change it, so that it to POST/PUT, so it can not so easily
+    # be used to change nodes through the url
+    if squarewheel.update_wheelchair_status(node_id, wheelchair_status):
+        return "Successfull"
+    else:
+        return "Failed."
+
 app.secret_key = flask_secret_key
 
 if __name__ == '__main__':
