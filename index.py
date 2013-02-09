@@ -7,30 +7,49 @@ import os
 import json
 import squarewheel
 import foursquare
+import uuid
+from mongokit import Connection
 from config import foursquare_client_id 
 from config import foursquare_callback_url
 from config import foursquare_client_secret
 from config import flask_secret_key
 
+
+# MongoDB configuration
+MONGODB_HOST = 'localhost'
+MONGODB_PORT = 27017
+
 app = Flask(__name__)
+app.config.from_object(__name__)
+connection = Connection(app.config['MONGODB_HOST'],
+                        app.config['MONGODB_PORT'])
+                            
+
 
 @app.before_request
 def before_request():
     global foursquare_client
     
-    if 'foursquare_token' in session:
+    if 'session_key' in session:
         session['foursquare_enabled'] = True
-        foursquare_client = foursquare.Foursquare(access_token=session['foursquare_token'], version="20130128")
+        collection = connection["dbname"].users
+        user = collection.find_one({'session_key': unicode(session['session_key']) })
+        if user:
+            foursquare_client = foursquare.Foursquare(access_token=user['access_token'], version="20130128")
+        else:
+            session['foursquare_enabled'] = False
+            session.clear()
     else:
         session['foursquare_enabled'] = False
+        session.clear()
         foursquare_client = foursquare.Foursquare(client_id=foursquare_client_id , client_secret=foursquare_client_secret, redirect_uri=foursquare_callback_url, version="20130128")
     
     if not 'foursquare_icon' in session:
         session['foursquare_enabled'] = False
         session['foursquare_icon'] = None
         session['foursquare_firstname'] = None
-    
-
+        session.clear()
+        
 @app.route('/')
 def startpage():
     global foursquare_client
@@ -50,9 +69,6 @@ def lastcheckins(page):
     
     global foursquare_client
     
-    if not 'foursquare_token' in session:
-        return ""
-    
     venues = squarewheel.get_last_foursquare_checkins(foursquare_client, page)
     return render_template('venue_list.html', venues=venues)
     
@@ -61,10 +77,7 @@ def lastcheckins(page):
 def todo(page):
     
     global foursquare_client
-    
-    if not 'foursquare_token' in session:
-        return ""
-        
+            
     venues = squarewheel.get_todo_venues(foursquare_client, page)
     return render_template('venue_list.html', venues=venues)
     
@@ -84,13 +97,22 @@ def foursquare_callback():
     code = request.args.get('code', '')
     access_token = foursquare_client.oauth.get_token(code)
     foursquare_client.set_access_token(access_token)
-    session['foursquare_token'] = access_token
+    
+    # <MongoDB>
+    session_key = uuid.uuid1()
+    session['session_key'] = session_key
+    collection = connection["dbname"].users
+    user = {'session_key': unicode(session_key), 'access_token': unicode(access_token) }
+    collection.insert(user)    
+    # </MongoDB>
+    
     (session['foursquare_firstname'], session['foursquare_icon']) = squarewheel.get_foursquare_user(foursquare_client)
     session['foursquare_enabled'] = True
     return render_template('start.html')
 
 @app.route('/disconnect')
 def foursquare_disconnect():
+    session.clear()
     session.pop('foursquare_token', None)
     session.pop('foursquare_icon', None)
     session.pop('foursquare_enabled', None)
@@ -104,6 +126,7 @@ def wheelmap_update_node(node_id, wheelchair_status):
         return "Successfull"
     else:
         return "Failed."
+        
 
 app.secret_key = flask_secret_key
 
