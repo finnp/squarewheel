@@ -14,11 +14,9 @@ from config import FOURSQUARE_CLIENT_ID
 from config import FOURSQUARE_CALLBACK_URL
 from config import FOURSQUARE_CLIENT_SECRET
 from config import FLASK_SECRET_KEY
-
-
-# MongoDB configuration
-MONGODB_HOST = 'localhost'
-MONGODB_PORT = 27017
+from config import MONGODB_HOST
+from config import MONGODB_PORT
+from config import MONGODB_DBNAME
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -32,7 +30,7 @@ def before_request():
     
     if 'session_key' in session:
         g.foursquare_enabled = True
-        collection = connection["dbname"].users
+        collection = connection[MONGODB_DBNAME].users
         user = collection.find_one({'session_key': unicode(session['session_key']) })
         if user:
             g.foursquare_client = foursquare.Foursquare(access_token=user['access_token'], version="20130128")
@@ -89,7 +87,7 @@ def foursquare_callback():
     # <MongoDB>
     session_key = uuid.uuid1()
     session['session_key'] = session_key
-    collection = connection["dbname"].users
+    collection = connection[MONGODB_DBNAME].users
     user = {'session_key': unicode(session_key), 'access_token': unicode(access_token) }
     collection.insert(user)    
     # </MongoDB>
