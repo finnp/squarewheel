@@ -10,10 +10,10 @@ import squarewheel
 import foursquare
 import uuid
 from mongokit import Connection
-from config import foursquare_client_id 
-from config import foursquare_callback_url
-from config import foursquare_client_secret
-from config import flask_secret_key
+from config import FOURSQUARE_CLIENT_ID
+from config import FOURSQUARE_CALLBACK_URL
+from config import FOURSQUARE_CLIENT_SECRET
+from config import FLASK_SECRET_KEY
 
 
 # MongoDB configuration
@@ -29,51 +29,45 @@ connection = Connection(app.config['MONGODB_HOST'],
 
 @app.before_request
 def before_request():
-    global foursquare_client
     
     if 'session_key' in session:
         g.foursquare_enabled = True
         collection = connection["dbname"].users
         user = collection.find_one({'session_key': unicode(session['session_key']) })
         if user:
-            foursquare_client = foursquare.Foursquare(access_token=user['access_token'], version="20130128")
-            (g.foursquare_firstname, g.foursquare_icon) = squarewheel.get_foursquare_user(foursquare_client)
+            g.foursquare_client = foursquare.Foursquare(access_token=user['access_token'], version="20130128")
+            (g.foursquare_firstname, g.foursquare_icon) = squarewheel.get_foursquare_user(g.foursquare_client)
         else:
             g.foursquare_enabled = False
     else:
         g.foursquare_enabled = False
-        foursquare_client = foursquare.Foursquare(client_id=foursquare_client_id , client_secret=foursquare_client_secret, redirect_uri=foursquare_callback_url, version="20130128")
+        g.foursquare_client = foursquare.Foursquare(client_id=FOURSQUARE_CLIENT_ID, client_secret=FOURSQUARE_CLIENT_SECRET, redirect_uri=FOURSQUARE_CALLBACK_URL, version="20130128")
     
         
 @app.route('/')
 def startpage():
-    global foursquare_client
-    foursquare_oauth_url = foursquare_client.oauth.auth_url()
+    foursquare_oauth_url = g.foursquare_client.oauth.auth_url()
     return render_template('start.html', foursquare_oauth_url = foursquare_oauth_url)
 
 @app.route('/foursquare/venues/explore/<city>', defaults={'page': 0})
 @app.route('/foursquare/venues/explore/<city>/<int:page>')
 def explore_city(city, page):
-    venues = squarewheel.explore_foursquare(foursquare_client, city, page)
+    venues = squarewheel.explore_foursquare(g.foursquare_client, city, page)
     return render_template('venue_list.html', venues=venues)
 
 @app.route('/foursquare/venues/lastcheckins', defaults={'page': 0})
 @app.route('/foursquare/venues/lastcheckins/<int:page>')
 def lastcheckins(page):
     # Change this and comminicate with Javascript
-    
-    global foursquare_client
-    
-    venues = squarewheel.get_last_foursquare_checkins(foursquare_client, page)
+       
+    venues = squarewheel.get_last_foursquare_checkins(g.foursquare_client, page)
     return render_template('venue_list.html', venues=venues)
     
 @app.route('/foursquare/venues/todo', defaults={'page': 0})
 @app.route('/foursquare/venues/todo/<int:page>')
 def todo(page):
     
-    global foursquare_client
-            
-    venues = squarewheel.get_todo_venues(foursquare_client, page)
+    venues = squarewheel.get_todo_venues(g.foursquare_client, page)
     return render_template('venue_list.html', venues=venues)
     
 @app.route('/wheelmap/nodes')
@@ -87,11 +81,10 @@ def get_nodes():
 @app.route('/foursquare')
 def foursquare_callback():
     
-    global foursquare_client
-    
+   
     code = request.args.get('code', '')
-    access_token = foursquare_client.oauth.get_token(code)
-    foursquare_client.set_access_token(access_token)
+    access_token = g.foursquare_client.oauth.get_token(code)
+    g.foursquare_client.set_access_token(access_token)
     
     # <MongoDB>
     session_key = uuid.uuid1()
@@ -101,7 +94,7 @@ def foursquare_callback():
     collection.insert(user)    
     # </MongoDB>
     
-    (g.foursquare_firstname, g.foursquare_icon) = squarewheel.get_foursquare_user(foursquare_client)
+    (g.foursquare_firstname, g.foursquare_icon) = squarewheel.get_foursquare_user(g.foursquare_client)
     g.foursquare_enabled = True
     return render_template('start.html')
 
@@ -123,7 +116,7 @@ def wheelmap_update_node(node_id, wheelchair_status):
         return "Failed."
         
 
-app.secret_key = flask_secret_key
+app.secret_key = FLASK_SECRET_KEY
 
 if __name__ == '__main__':
     app.debug = True

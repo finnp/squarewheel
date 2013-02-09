@@ -4,17 +4,7 @@ import difflib
 import math
 import re
 import wheelmap
-from config import wheelmap_api_key
-from config import foursquare_client_id
-from config import foursquare_client_secret
-from config import foursquare_callback_url
-
-wheelmap_api_url = "http://wheelmap.org/api/" 
-wheelmap_api_data = "?api_key=%s" % wheelmap_api_key
-
-foursquare_version = "&v=20130128"
-foursquare_api_url = "https://api.foursquare.com/v2/"
-foursquare_client_data = "?client_id=%s&client_secret=%s" % (foursquare_client_id, foursquare_client_secret)
+from config import WHEELMAP_API_KEY
 
 printstatus = False
 
@@ -114,7 +104,7 @@ def search_wheelmap (lat, lng, interval, name, n):
     # Remove parentheses (better for search, generally)
     name = re.sub(r'\([^)]*\)', '', name)
     
-    wheelmap_client = wheelmap.Wheelmap(wheelmap_api_key)
+    wheelmap_client = wheelmap.Wheelmap(WHEELMAP_API_KEY)
     
     bbox= (from_lng, from_lat, to_lng, to_lat)
     
@@ -166,6 +156,6 @@ def json_node_search(name, lat, lng):
     return json.dumps(json_response, indent=4, separators=(',', ': '))
     
 def update_wheelchair_status(node_id, wheelchair_status):
-    wheelmap_client = wheelmap.Wheelmap(wheelmap_api_key)
+    wheelmap_client = wheelmap.Wheelmap(WHEELMAP_API_KEY)
     return wheelmap_client.nodes_update_wheelchair(node_id=node_id, wheelchair=wheelchair_status)
     
