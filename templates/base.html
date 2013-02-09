@@ -60,8 +60,8 @@
                 </li>
             </ul>
             <div class="nav pull-right">
-                {% if session['foursquare_enabled'] %}
-                    <img alt="user" class="img-rounded" src="{{ session['foursquare_icon'] }}"></img>{{ session['foursquare_firstname'] }}
+                {% if g.foursquare_enabled %}
+                    <img alt="user" class="img-rounded" src="{{ g.foursquare_icon }}"></img>{{ g.foursquare_firstname }}
                 {% else %}
                     <a href="{{- foursquare_oauth_url -}}">
                         <button class="btn btn-primary btn-info" type="button">Login with <img src="{{- url_for('static', filename='img/foursquare-login.png') -}}"></button>

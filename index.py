@@ -2,6 +2,7 @@ from flask import Flask
 from flask import render_template
 from flask import request
 from flask import session
+from flask import g
 from urllib2 import urlopen
 import os
 import json
@@ -31,24 +32,18 @@ def before_request():
     global foursquare_client
     
     if 'session_key' in session:
-        session['foursquare_enabled'] = True
+        g.foursquare_enabled = True
         collection = connection["dbname"].users
         user = collection.find_one({'session_key': unicode(session['session_key']) })
         if user:
             foursquare_client = foursquare.Foursquare(access_token=user['access_token'], version="20130128")
+            (g.foursquare_firstname, g.foursquare_icon) = squarewheel.get_foursquare_user(foursquare_client)
         else:
-            session['foursquare_enabled'] = False
-            session.clear()
+            g.foursquare_enabled = False
     else:
-        session['foursquare_enabled'] = False
-        session.clear()
+        g.foursquare_enabled = False
         foursquare_client = foursquare.Foursquare(client_id=foursquare_client_id , client_secret=foursquare_client_secret, redirect_uri=foursquare_callback_url, version="20130128")
     
-    if not 'foursquare_icon' in session:
-        session['foursquare_enabled'] = False
-        session['foursquare_icon'] = None
-        session['foursquare_firstname'] = None
-        session.clear()
         
 @app.route('/')
 def startpage():
@@ -106,8 +101,8 @@ def foursquare_callback():
     collection.insert(user)    
     # </MongoDB>
     
-    (session['foursquare_firstname'], session['foursquare_icon']) = squarewheel.get_foursquare_user(foursquare_client)
-    session['foursquare_enabled'] = True
+    (g.foursquare_firstname, g.foursquare_icon) = squarewheel.get_foursquare_user(foursquare_client)
+    g.foursquare_enabled = True
     return render_template('start.html')
 
 @app.route('/disconnect')
