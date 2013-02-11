@@ -27,7 +27,7 @@ class FoursquareVenue:
     def get_map_with_marker(self):
         html =  "<div style='position:relative'>"
         html += "<div style='position:absolute; left:69px; top:69px;' >"
-        html += "<img src='/static/ajax-loader.gif' class='mapmarker' alt='Marker'/>"
+        html += "<img src='/static/img/ajax-loader.gif' class='mapmarker' alt='Marker'/>"
         html += "</div>"
         html += "<img src='%s' alt='Map' class='img-circle'/>" % self.get_openstreetmap_image(16)
         html += "</div>"

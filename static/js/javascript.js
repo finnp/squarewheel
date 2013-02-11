@@ -13,7 +13,35 @@ $(document).ready(function() {
         load_venues( $(this).data("current-url"), $(this).data("next-page") );
     });
     
+    $('#btn-node-update').click(function(){
+        update_wheelmap_node($(this).data('wheelmap_id'),
+                            $('#form-update-status input:checked').val());
+    });
+    
 });
+
+var update_wheelmap_node = function(wheelmap_id, wheelchair_status) {
+      
+        $.ajax({
+            dataType: "json",
+            url: "/wheelmap/update_node/",
+            type: "POST",
+            data: {
+                wheelmapid: wheelmap_id,
+                wheelchairstatus: wheelchair_status
+            },
+            success: function(r) {
+                if (r.success) {
+                    alert("Successfully updated.");
+                } else {
+                    alert("Something is wrong.");
+                }
+            },
+            error: function() {
+                alert("There was an error.");
+            }
+        });
+}
 
 var load_venues = function(url, page) {
     if ( typeof page == "undefined" ) 
@@ -59,19 +87,40 @@ var load_wheelmap_info = function() {
         },
         success: function( r ) {
             if ( r.wheelmap ) {
+                // Add class for the status for filtering of visible infos
                 $(div).addClass("wheelchair-" + r.wheelchair);
+                // Change the headline to the name of the venue.
                 $(div).find('.nodeheadline').html(r.name);
-                $(div).find('.wheelmapinfo>p').html("<a href='http://wheelmap.org/en/nodes/" + r.wheelmap_id + "'>Wheelmap</a><br/>Wheelchair: " + r.wheelchair + " <a class='edit-wheelchair-status' href='#'>[Edit]</a><br>Description: " + r.wheelchair_description);
+                // Add the response data to the box
+                $nodeinfo = $(div).find('.nodeinfo');
+                $nodeinfo.find('.wheelmap-link')[0].pathname += r.wheelmap_id;
+                $nodeinfo.find('.wheelmap-status').text(r.wheelchair);
+                $nodeinfo.find('.wheelmap-description').text(r.wheelchair_description);
+                $nodeinfo.show();
+                
+                $nodeinfo.find('.edit-wheelchair-status').click(function(){
+                        $('#myModalLabel').text(r.name);
+                        $('#editwheelmap input[value="' + r.wheelchair + '"]').prop('checked', true);
+                        $('#btn-node-update').data('wheelmap_id', r.wheelmap_id);
+                        $('#editwheelmap').modal('show');
+                });
+                
                 $(div).find('.map img.mapmarker').attr("src", "/static/img/" + r.wheelchair + ".png");
             } else {
+                // Add class for the status for filtering of visible infos
                 $(div).addClass("wheelchair-notfound");
+                // Change headline to not found
                 $(div).find('.nodeheadline').html("Not found on wheelmap");
-                $(div).find('.wheelmapinfo>p').html("Look for it yourself on <a href='http://wheelmap.org/en/?lat="+$(div).data('lat')+"&lon="+$(div).data('lng')+"&zoom=17'>wheelmap</a>");
+                $nodenotfound = $(div).find(".nodenotfound");
+                $search_link = $nodenotfound.find(".wheelmap-search-link")[0];
+                $search_link.href = $search_link.href.replace("0lat0", $(div).data('lat'));
+                $search_link.href = $search_link.href.replace("0lon0", $(div).data('lng'));
+                $nodenotfound.show();
+                               
                 $(div).find('.map img.mapmarker').attr("src", "/static/img/notfound.png");
             }
             // Hide the ones, that are not wanted
             update_filter();
-            add_edit_popovers();
         },
         error: function() {
             $(div).find('.nodeheadline').html("Error: There was a problem contacting wheelmap.");
@@ -84,32 +133,19 @@ var update_filter = function () {
     // Function for filtering the results by wheelchair status
     
     $(".wheelchair-filter-checkbox").each(function() {
-        wheelchair_status = $(this).data("wheelchair")
+        wheelchair_status = $(this).data("wheelchair");
         if ( $(this).is(":checked") ) {
-            $(".wheelchair-" + wheelchair_status).show();
+            $(".wheelchair-" + wheelchair_status).each(function(){
+                if( !$(this).hasClass('in') ) {
+                    $(this).collapse('show');
+                }
+            });
         } else {
-            $(".wheelchair-" + wheelchair_status).hide();
+            $(".wheelchair-" + wheelchair_status).each(function(){
+                if( $(this).hasClass('in') ) {
+                    $(this).collapse('hide');
+                }
+            });
         }
     });
-}
-
-var add_edit_popovers = function() {
-    html = "<form class='form-horizontal'><div class='control-group'>";
-    html += "<label class='radio'><input type='radio' name='weelchair-status-change' value='yes' checked>wheelchair accessible</label>";
-    html += "<label class='radio'><input type='radio' name='weelchair-status-change' value='limited'>partly wheelchair accessible</label>";
-    html += "<label class='radio'><input type='radio' name='weelchair-status-change' value='no'>not wheelchair accessible</label>";
-    html += "<label class='radio'><input type='radio' name='weelchair-status-change' value='unknown'>unknown status</label>";
-    html += "</div></form>";
-    html += "<button class='btn cancel'>Cancel</button> <button class='btn btn-primary'>Update</button>"
-    
-        
-    $(".edit-wheelchair-status").each(function(){
-        $this = $(this)
-        $(this).popover({html: true, title: "Wheelchair accessible?", content: html});
-        $(this).click(function(e){ 
-            e.preventDefault();
-            $(this).popover("show"); 
-        });
-    });
-    
 }

@@ -3,12 +3,15 @@ from flask import render_template
 from flask import request
 from flask import session
 from flask import g
+from flask import jsonify
 from urllib2 import urlopen
 import os
 import json
 import squarewheel
 import foursquare
 import uuid
+import sys
+import logging
 from mongokit import Connection
 from config import FOURSQUARE_CLIENT_ID
 from config import FOURSQUARE_CALLBACK_URL
@@ -17,22 +20,29 @@ from config import FLASK_SECRET_KEY
 from config import MONGODB_HOST
 from config import MONGODB_PORT
 from config import MONGODB_DBNAME
+from config import MONGODB_NAME
+from config import MONGODB_PW
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 connection = Connection(app.config['MONGODB_HOST'],
                         app.config['MONGODB_PORT'])
-                            
 
 
 @app.before_request
 def before_request():
     
+    loghandler = logging.StreamHandler(stream=sys.stdout)
+    foursquare.log.addHandler(loghandler)
+    foursquare.log.setLevel(logging.DEBUG)
+    
     if 'session_key' in session:
-        g.foursquare_enabled = True
+        if MONGODB_NAME and MONGODB_PW:
+            connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)
         collection = connection[MONGODB_DBNAME].users
         user = collection.find_one({'session_key': unicode(session['session_key']) })
         if user:
+            g.foursquare_enabled = True
             g.foursquare_client = foursquare.Foursquare(access_token=user['access_token'], version="20130128")
             (g.foursquare_firstname, g.foursquare_icon) = squarewheel.get_foursquare_user(g.foursquare_client)
         else:
@@ -53,20 +63,26 @@ def explore_city(city, page):
     venues = squarewheel.explore_foursquare(g.foursquare_client, city, page)
     return render_template('venue_list.html', venues=venues)
 
+        
 @app.route('/foursquare/venues/lastcheckins', defaults={'page': 0})
 @app.route('/foursquare/venues/lastcheckins/<int:page>')
 def lastcheckins(page):
     # Change this and comminicate with Javascript
        
-    venues = squarewheel.get_last_foursquare_checkins(g.foursquare_client, page)
-    return render_template('venue_list.html', venues=venues)
+    if g.foursquare_enabled:
+        venues = squarewheel.get_last_foursquare_checkins(g.foursquare_client, page)
+        return render_template('venue_list.html', venues=venues)
+    else:
+        return "Not connected to foursquare."
     
 @app.route('/foursquare/venues/todo', defaults={'page': 0})
 @app.route('/foursquare/venues/todo/<int:page>')
 def todo(page):
-    
-    venues = squarewheel.get_todo_venues(g.foursquare_client, page)
-    return render_template('venue_list.html', venues=venues)
+    if g.foursquare_enabled:
+        venues = squarewheel.get_todo_venues(g.foursquare_client, page)
+        return render_template('venue_list.html', venues=venues)
+    else:
+        return "Not connected to foursquare."
     
 @app.route('/wheelmap/nodes')
 def get_nodes():
@@ -79,10 +95,17 @@ def get_nodes():
 @app.route('/foursquare')
 def foursquare_callback():
     
-   
     code = request.args.get('code', '')
+    
+    print "Code received: %s" % code
+    
     access_token = g.foursquare_client.oauth.get_token(code)
+    
+    print "Access Token received: %s" % access_token
+    
     g.foursquare_client.set_access_token(access_token)
+    
+    print "Access token set."
     
     # <MongoDB>
     session_key = uuid.uuid1()
@@ -91,35 +114,35 @@ def foursquare_callback():
     user = {'session_key': unicode(session_key), 'access_token': unicode(access_token) }
     collection.insert(user)    
     # </MongoDB>
-    
+       
     (g.foursquare_firstname, g.foursquare_icon) = squarewheel.get_foursquare_user(g.foursquare_client)
     g.foursquare_enabled = True
     return render_template('start.html')
 
 @app.route('/disconnect')
 def foursquare_disconnect():
-    session.clear()
-    session.pop('foursquare_token', None)
-    session.pop('foursquare_icon', None)
-    session.pop('foursquare_enabled', None)
+    session.pop('session_key', None)
     return "Session cleared"
 
-@app.route('/wheelmap/update_node/<node_id>/<wheelchair_status>')
-def wheelmap_update_node(node_id, wheelchair_status):
+@app.route('/wheelmap/update_node/', methods=['POST'])
+def wheelmap_update_node():
     # Works but maybe change it, so that it to POST/PUT, so it can not so easily
     # be used to change nodes through the url
-    if squarewheel.update_wheelchair_status(node_id, wheelchair_status):
-        return "Successfull"
-    else:
-        return "Failed."
+    if request.is_xhr:
+        if squarewheel.update_wheelchair_status(request.form['wheelmapid'],
+                                                request.form['wheelchairstatus']):
+            return jsonify(success=True)
+        else:
+            abort(400)
         
 
 app.secret_key = FLASK_SECRET_KEY
 
+
 if __name__ == '__main__':
-    app.debug = True
+    app.debug = True 
     #app.debug = False
-    if app.debug:
+    if app.debug: #exception
         app.run()
     else:
         # Bind to PORT if defined, otherwise default to 5000.

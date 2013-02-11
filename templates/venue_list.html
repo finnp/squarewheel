@@ -1,6 +1,6 @@
 {% block content %}
     {% for venue in venues %}
-        <div class="venue" data-lat="{{- venue.lat -}}" data-lng="{{- venue.lng -}}" data-name="{{- venue.name -}}">
+        <div class="venue collapse in" data-lat="{{- venue.lat -}}" data-lng="{{- venue.lng -}}" data-name="{{- venue.name -}}">
             <div class="row-fluid">
                 <div class="span5 venueheadline">
                     <h3>{{ venue.name }}</h3>
@@ -17,9 +17,14 @@
                 <div class="span2 map">
                     {{ venue.get_map_with_marker()|safe }}
                 </div>
-                <div class="span3 wheelmapinfo">
-                    <p></p>
+                <div style="display:none;" class="span3 nodeinfo">
+                    <p><a class="wheelmap-link" href="http://wheelmap.org/en/nodes/">Wheelmap</a><br>
+                    Wheelchair: <span class="wheelmap-status"></span><a class="edit-wheelchair-status">[Edit]</a><br>
+                    Description: <span class="wheelmap-description"></span></p>
                     <address></address>
+                </div>
+                <div style="display:none;" class="span3 nodenotfound">
+                    <p>Look for it yourself on <a class="wheelmap-search-link" href="http://wheelmap.org/en/?lat=0lat0&amp;lon=0lon0&amp;zoom=17">wheelmap</a></p>
                 </div>
             </div>
             <hr class="soften">
