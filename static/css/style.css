@@ -1,0 +1,33 @@
+.navbar-form {
+    padding-left: 15px;
+}
+
+.wheelchair-filter-checkbox {
+    margin-left: -10px !important;
+    margin-top: 10px !important;
+}
+
+.checkbox {
+    padding-right: 10px !important;
+    padding-bottom: 15px !important;
+}
+
+#label-yes {
+    background-image: url(/static/img/yes.png);
+}
+
+#label-no {
+    background-image: url(/static/img/no.png);
+}
+
+#label-limited {
+    background-image: url(/static/img/limited.png);
+}
+
+#label-unknown {
+    background-image: url(/static/img/unknown.png);
+}
+
+#label-notfound {
+    background-image: url(/static/img/notfound.png);
+}

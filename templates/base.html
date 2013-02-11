@@ -4,6 +4,7 @@
     <title>SquareWheel - Combining Foursquare and Wheelmap</title>
     <!-- Bootstrap -->
     <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css">
   </head>
   <body>
     <div class="container">
@@ -25,36 +26,36 @@
                 <li class="divider-vertical"></li>
                 <li>
                     <form class="navbar-form">
-                        <label title="Rated as fully wheelchair accesible" data-placement="bottom"  rel="tooltip" class="checkbox">
-                            <input class="wheelchair-filter-checkbox" data-wheelchair = "yes" id="checkbox-wheelchair-yes" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/yes.png') -}}">
+                        <label id="label-yes" title="Rated as fully wheelchair accesible" data-placement="bottom"  rel="tooltip" class="checkbox">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "yes" id="checkbox-wheelchair-yes" type="checkbox" checked="checked">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
-                        <label title="Rated as limited wheelchair accesible" data-placement="bottom" rel="tooltip" class="checkbox">
-                            <input class="wheelchair-filter-checkbox" data-wheelchair = "limited" id="checkbox-wheelchair-limited" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/limited.png') -}}">
+                        <label id="label-limited" title="Rated as limited wheelchair accesible" data-placement="bottom" rel="tooltip" class="checkbox">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "limited" id="checkbox-wheelchair-limited" type="checkbox" checked="checked">
+                        </label>
+                    </form>
+                </li>
+                <li>
+                    <form  class="navbar-form">
+                        <label id="label-no" title="Rated as not wheelchair accesible" data-placement="bottom"  rel="tooltip" class="checkbox">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "no" id="checkbox-wheelchair-no" type="checkbox" checked="checked">
                         </label>
                     </form>
                 </li>
                 <li>
                     <form class="navbar-form">
-                        <label title="Rated as not wheelchair accesible" data-placement="bottom"  rel="tooltip" class="checkbox">
-                            <input class="wheelchair-filter-checkbox" data-wheelchair = "no" id="checkbox-wheelchair-no" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/no.png') -}}">
-                        </label>
-                    </form>
-                </li>
-                <li>
-                    <form class="navbar-form">
-                        <label title="Not rated on wheelmap" data-placement="bottom"  rel="tooltip" class="checkbox">
-                            <input class="wheelchair-filter-checkbox" data-wheelchair = "unknown" id="checkbox-wheelchair-unknown" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/unknown.png') -}}">
+                        <label id="label-unknown" title="Not rated on wheelmap" data-placement="bottom"  rel="tooltip" class="checkbox">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "unknown" id="checkbox-wheelchair-unknown" type="checkbox" checked="checked">
                         </label>
                     </form>
                 </li>
                <li>
                     <form class="navbar-form">
-                        <label title="Venue not found on wheelmap" data-placement="right"  rel="tooltip" class="checkbox">
-                            <input class="wheelchair-filter-checkbox" data-wheelchair = "notfound" id="checkbox-wheelchair-notfound" type="checkbox" checked="checked"><img src="{{- url_for('static', filename='img/notfound.png') -}}">
+                        <label id="label-notfound" title="Venue not found on wheelmap" data-placement="right"  rel="tooltip" class="checkbox">
+                            <input class="wheelchair-filter-checkbox" data-wheelchair = "notfound" id="checkbox-wheelchair-notfound" type="checkbox" checked="checked">
                         </label>
                     </form>
                 </li>
@@ -78,7 +79,27 @@
             <div style="display:none" id="loadmorevenues">
                 <button id="loadmorevenues-button" class="btn btn-primary">Load more <i class="icon-circle-arrow-down icon-white"></i></button>
             </div>
-     </div>
+            
+            <!-- Modal for editing wheelmap nodes -->
+            <div id="editwheelmap" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">Update wheelmap node</h3>
+              </div>
+              <div class="modal-body">
+                <form id='form-update-status' class='form-horizontal'><div class='control-group'>
+                    <label class='radio'><input type='radio' name='weelchair-status-change' value='yes'>wheelchair accessible</label>
+                    <label class='radio'><input type='radio' name='weelchair-status-change' value='limited'>partly wheelchair accessible</label>
+                    <label class='radio'><input type='radio' name='weelchair-status-change' value='no'>not wheelchair accessible</label>
+                    <label class='radio'><input type='radio' name='weelchair-status-change' value='unknown' checked disabled>unknown status</label>
+                </div></form>
+              </div>
+              <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                <button id="btn-node-update" class="btn btn-primary">Update</button>
+              </div>
+            </div>
+    </div>
     <hr class="soften">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
