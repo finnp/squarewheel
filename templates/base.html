@@ -12,15 +12,10 @@
           <div class="navbar-inner">
             <a class="brand" href="/">SquareWheel</a>
             <ul class="nav">
-                <li class="dropdown">
-                    <a class ="dropdown-toggle" id="citydrop" data-toggle="dropdown" href="#" >Explore a City <b class="caret"></b></a>
-                        <ul class="dropdown-menu" role="menu" aria-labelledby="citydrop">
-                            <li><a class="load-venues-link" tabindex="-1" href="explore/berlin">Berlin</a></li>
-                            <li><a class="load-venues-link" tabindex="-1" href="explore/hamburg">Hamburg</a></li>
-                            <li><a class="load-venues-link" tabindex="-1" href="explore/london">London</a></li>
-                            <li><a class="load-venues-link" tabindex="-1" href="explore/muenchen">München</a></li>
-                        </ul>
-                    </li>
+                <li><form class="navbar-form pull-left input-append">
+                    <input class="span2" id="input-explore-search" type="text" placeholder="Berlin">
+                    <button class="btn" id="btn-explore-search" type="submit">Explore</button>
+                </form></li>
                 <li><a class="load-venues-link" href="lastcheckins">Last Checkins</a></li>
                 <li><a class="load-venues-link" href="todo">To Do</a></li>
                 <li class="divider-vertical"></li>

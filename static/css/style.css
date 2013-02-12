@@ -2,6 +2,10 @@
     padding-left: 15px;
 }
 
+.navbar .input-append .btn { 
+    margin-top: 5px !important; 
+}
+
 .wheelchair-filter-checkbox {
     margin-left: -10px !important;
     margin-top: 10px !important;

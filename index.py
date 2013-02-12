@@ -8,7 +8,7 @@ from urllib2 import urlopen
 import os
 import json
 import squarewheel
-#import foursquare
+import foursquare
 import uuid
 import logging
 from mongokit import Connection
@@ -46,8 +46,12 @@ def startpage():
 @app.route('/foursquare/venues/explore/<city>/<int:page>')
 def explore_city(city, page):
     foursquare_client = squarewheel.get_foursquare_client(session)[1]
-    venues = squarewheel.explore_foursquare(foursquare_client, city, page)
-    return render_template('venue_list.html', venues=venues)
+    try:
+        venues = squarewheel.explore_foursquare(foursquare_client, city, page)
+    except foursquare.FailedGeocode, e:
+        return "Foursquare could not find the location"
+    else:
+        return render_template('venue_list.html', venues=venues)
 
 
         

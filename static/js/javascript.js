@@ -16,10 +16,19 @@ $(document).ready(function() {
     $('.brand').click(function(e){
         e.preventDefault();
         $('#venues').html("Loading..");
+        $('#loadmorevenues').hide();
         $.ajaxQ.abortAll();
         $.get("/", function(r){
             $('#venues').html(r); 
         });
+    });
+    
+    $('#btn-explore-search').click(function(e){
+        e.preventDefault();
+        if ($("#input-explore-search").val())
+            load_venues( "explore/" + $("#input-explore-search").val());
+        else
+            load_venues( "explore/" + $("#input-explore-search").attr('placeholder'));
     });
     
     $('#btn-node-update').click(function(){

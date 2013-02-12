@@ -1,4 +1,5 @@
 from urllib2 import urlopen
+from urllib2 import unquote
 import json
 import difflib
 import math
@@ -62,9 +63,11 @@ def explore_foursquare(foursquare_client, near, page = 0):
     
     per_page = 10
     
-    params = {'limit': per_page, 'offset': page * per_page, 'near': near}
+    params = {'limit': per_page, 'offset': page * per_page, 'near': unquote(near)}
     
+
     results = foursquare_client.venues.explore(params=params)
+
     
     venues = []
     
