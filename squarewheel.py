@@ -4,9 +4,25 @@ import difflib
 import math
 import re
 import wheelmap
+import foursquare
+import logging
+import sys
+from config import FOURSQUARE_CLIENT_ID
+from config import FOURSQUARE_CALLBACK_URL
+from config import FOURSQUARE_CLIENT_SECRET
 from config import WHEELMAP_API_KEY
+from config import MONGODB_NAME
+from config import MONGODB_PW
+from config import MONGODB_HOST
+from config import MONGODB_DBNAME
+from config import MONGODB_PORT
+from mongokit import Connection
 
 printstatus = False
+
+loghandler = logging.StreamHandler(stream=sys.stdout)
+foursquare.log.addHandler(loghandler)
+foursquare.log.setLevel(logging.DEBUG)
 
 class FoursquareVenue:
     def __init__(self, json_venue):
@@ -159,3 +175,18 @@ def update_wheelchair_status(node_id, wheelchair_status):
     wheelmap_client = wheelmap.Wheelmap(WHEELMAP_API_KEY)
     return wheelmap_client.nodes_update_wheelchair(node_id=node_id, wheelchair=wheelchair_status)
     
+def get_foursquare_client(session):
+    """Returns a tupel (user_logged_in, foursquare client)"""
+    
+    # Connection to database
+    connection = Connection(MONGODB_HOST, MONGODB_PORT)
+    
+    if 'session_key' in session:
+        if MONGODB_NAME and MONGODB_PW:
+            connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)
+        collection = connection[MONGODB_DBNAME].users
+        user = collection.find_one({'session_key': unicode(session['session_key']) })
+        if user:
+            return (True, foursquare.Foursquare(access_token=user['access_token'], version="20130128"))
+    return (False, foursquare.Foursquare(client_id=FOURSQUARE_CLIENT_ID, client_secret=FOURSQUARE_CLIENT_SECRET, redirect_uri=FOURSQUARE_CALLBACK_URL, version="20130128"))
+   

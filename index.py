@@ -8,14 +8,13 @@ from urllib2 import urlopen
 import os
 import json
 import squarewheel
-import foursquare
+#import foursquare
 import uuid
-import sys
 import logging
 from mongokit import Connection
-from config import FOURSQUARE_CLIENT_ID
-from config import FOURSQUARE_CALLBACK_URL
-from config import FOURSQUARE_CLIENT_SECRET
+#from config import FOURSQUARE_CLIENT_ID
+#from config import FOURSQUARE_CALLBACK_URL
+#from config import FOURSQUARE_CLIENT_SECRET
 from config import FLASK_SECRET_KEY
 from config import MONGODB_HOST
 from config import MONGODB_PORT
@@ -25,52 +24,39 @@ from config import MONGODB_PW
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-connection = Connection(app.config['MONGODB_HOST'],
-                        app.config['MONGODB_PORT'])
-
-
-@app.before_request
-def before_request():
-    
-    loghandler = logging.StreamHandler(stream=sys.stdout)
-    foursquare.log.addHandler(loghandler)
-    foursquare.log.setLevel(logging.DEBUG)
-    
-    if 'session_key' in session:
-        if MONGODB_NAME and MONGODB_PW:
-            connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)
-        collection = connection[MONGODB_DBNAME].users
-        user = collection.find_one({'session_key': unicode(session['session_key']) })
-        if user:
-            g.foursquare_enabled = True
-            g.foursquare_client = foursquare.Foursquare(access_token=user['access_token'], version="20130128")
-            (g.foursquare_firstname, g.foursquare_icon) = squarewheel.get_foursquare_user(g.foursquare_client)
-        else:
-            g.foursquare_enabled = False
-    else:
-        g.foursquare_enabled = False
-        g.foursquare_client = foursquare.Foursquare(client_id=FOURSQUARE_CLIENT_ID, client_secret=FOURSQUARE_CLIENT_SECRET, redirect_uri=FOURSQUARE_CALLBACK_URL, version="20130128")
-    
-        
+       
 @app.route('/')
 def startpage():
-    foursquare_oauth_url = g.foursquare_client.oauth.auth_url()
-    return render_template('start.html', foursquare_oauth_url = foursquare_oauth_url)
+    if not request.is_xhr:
+        fq_logged_in, foursquare_client = squarewheel.get_foursquare_client(session)
+        if fq_logged_in:
+            foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user(foursquare_client)
+            foursquare_oauth_url = False
+        else:
+            foursquare_oauth_url = foursquare_client.oauth.auth_url()
+            foursquare_firstname = False
+            foursquare_icon = False
+    else:
+        foursquare_oauth_url = False
+        foursquare_firstname = False
+        foursquare_icon = False
+    return render_template('start.html', foursquare_oauth_url = foursquare_oauth_url, foursquare_icon=foursquare_icon, foursquare_firstname=foursquare_firstname)
 
 @app.route('/foursquare/venues/explore/<city>', defaults={'page': 0})
 @app.route('/foursquare/venues/explore/<city>/<int:page>')
 def explore_city(city, page):
-    venues = squarewheel.explore_foursquare(g.foursquare_client, city, page)
+    foursquare_client = squarewheel.get_foursquare_client(session)[1]
+    venues = squarewheel.explore_foursquare(foursquare_client, city, page)
     return render_template('venue_list.html', venues=venues)
+
 
         
 @app.route('/foursquare/venues/lastcheckins', defaults={'page': 0})
 @app.route('/foursquare/venues/lastcheckins/<int:page>')
 def lastcheckins(page):
-    # Change this and comminicate with Javascript
-       
-    if g.foursquare_enabled:
-        venues = squarewheel.get_last_foursquare_checkins(g.foursquare_client, page)
+    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
+    if fq_logged_in:
+        venues = squarewheel.get_last_foursquare_checkins(foursquare_client, page)
         return render_template('venue_list.html', venues=venues)
     else:
         return "Not connected to foursquare."
@@ -78,8 +64,9 @@ def lastcheckins(page):
 @app.route('/foursquare/venues/todo', defaults={'page': 0})
 @app.route('/foursquare/venues/todo/<int:page>')
 def todo(page):
-    if g.foursquare_enabled:
-        venues = squarewheel.get_todo_venues(g.foursquare_client, page)
+    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
+    if fq_logged_in:
+        venues = squarewheel.get_todo_venues(foursquare_client, page)
         return render_template('venue_list.html', venues=venues)
     else:
         return "Not connected to foursquare."
@@ -95,29 +82,36 @@ def get_nodes():
 @app.route('/foursquare')
 def foursquare_callback():
     
-    code = request.args.get('code', '')
+    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
     
-    print "Code received: %s" % code
+    if not fq_logged_in:
     
-    access_token = g.foursquare_client.oauth.get_token(code)
-    
-    print "Access Token received: %s" % access_token
-    
-    g.foursquare_client.set_access_token(access_token)
-    
-    print "Access token set."
-    
-    # <MongoDB>
-    session_key = uuid.uuid1()
-    session['session_key'] = session_key
-    collection = connection[MONGODB_DBNAME].users
-    user = {'session_key': unicode(session_key), 'access_token': unicode(access_token) }
-    collection.insert(user)    
-    # </MongoDB>
-       
-    (g.foursquare_firstname, g.foursquare_icon) = squarewheel.get_foursquare_user(g.foursquare_client)
-    g.foursquare_enabled = True
-    return render_template('start.html')
+        code = request.args.get('code', '')
+        
+        print "Code received: %s" % code
+        
+        access_token = foursquare_client.oauth.get_token(code)
+        
+        print "Access Token received: %s" % access_token
+        
+        foursquare_client.set_access_token(access_token)
+        
+        print "Access token set."
+        
+        connection = Connection(MONGODB_HOST, MONGODB_PORT)
+        
+        # <MongoDB>
+        session_key = uuid.uuid1()
+        session['session_key'] = session_key
+        collection = connection[MONGODB_DBNAME].users
+        user = {'session_key': unicode(session_key), 'access_token': unicode(access_token) }
+        collection.insert(user)    
+        # </MongoDB>
+           
+        foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user(foursquare_client)
+        return render_template('start.html', foursquare_firstname=foursquare_firstname, foursquare_icon=foursquare_icon)
+    else:
+        return "Already logged in"
 
 @app.route('/disconnect')
 def foursquare_disconnect():
