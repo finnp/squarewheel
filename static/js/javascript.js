@@ -13,10 +13,45 @@ $(document).ready(function() {
         load_venues( $(this).data("current-url"), $(this).data("next-page") );
     });
     
+    $('.brand').click(function(e){
+        e.preventDefault();
+        $('#venues').html("Loading..");
+        $.ajaxQ.abortAll();
+        $.get("/", function(r){
+            $('#venues').html(r); 
+        });
+    });
+    
     $('#btn-node-update').click(function(){
         update_wheelmap_node($(this).data('wheelmap_id'),
                             $('#form-update-status input:checked').val());
     });
+    
+    // Keeping track of the ajax calls to abort them
+    // From: http://stackoverflow.com/a/11612641/1462065
+    $.ajaxQ = (function(){
+      var id = 0, Q = {};
+
+      $(document).ajaxSend(function(e, jqx){
+        jqx._id = ++id;
+        Q[jqx._id] = jqx;
+      });
+      $(document).ajaxComplete(function(e, jqx){
+        delete Q[jqx._id];
+      });
+
+      return {
+        abortAll: function(){
+          var r = [];
+          $.each(Q, function(i, jqx){
+            r.push(jqx._id);
+            jqx.abort();
+          });
+          return r;
+        }
+      };
+
+    })();
     
 });
 
