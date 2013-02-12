@@ -7,9 +7,9 @@
     <link rel="stylesheet" type="text/css" href="/static/css/style.css">
   </head>
   <body>
-    <div class="container">
-        <div class="navbar">
+        <div class="navbar navbar-fixed-top">
           <div class="navbar-inner">
+              <div class="container">
             <a class="brand" href="/">SquareWheel</a>
             <ul class="nav">
                 <li><form class="navbar-form pull-left input-append">
@@ -64,8 +64,10 @@
                     </a>
                 {% endif %}
             </div>
+            </div>
           </div>
         </div>
+        <div class="container">
             <div id="venues">
                 {% block content %}
                     This page is intetionally left blank.
@@ -74,6 +76,7 @@
             <div style="display:none" id="loadmorevenues">
                 <button id="loadmorevenues-button" class="btn btn-primary">Load more <i class="icon-circle-arrow-down icon-white"></i></button>
             </div>
+        </div>
             
             <!-- Modal for editing wheelmap nodes -->
             <div id="editwheelmap" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -94,7 +97,7 @@
                 <button id="btn-node-update" class="btn btn-primary">Update</button>
               </div>
             </div>
-    </div>
+            
     <hr class="soften">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>

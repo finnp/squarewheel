@@ -1,5 +1,13 @@
+html {
+    overflow-y: scroll;
+}
+
 .navbar-form {
     padding-left: 15px;
+}
+
+body {
+    padding-top: 60px;
 }
 
 .navbar .input-append .btn { 
