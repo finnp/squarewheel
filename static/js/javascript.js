@@ -98,6 +98,8 @@ var load_venues = function(url, page) {
     $load_div = $("<div>Loading venues from foursquare... <br/><img alt='Loading' src='/static/img/ajax-loader-big.gif'/><hr class='soften'></div>");
     
     $('#venues').append($load_div);
+    
+    $('#loadmorevenues').hide();
         
     $.ajax({
         url: "/foursquare/venues/" + url + "/" + page,
