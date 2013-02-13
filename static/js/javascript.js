@@ -36,6 +36,11 @@ $(document).ready(function() {
                             $('#form-update-status input:checked').val());
     });
     
+    // Removing the success/error alert when closed in the modal
+    $('#editwheelmap').on('hidden', function () {
+        $('#alert-edit-node').removeClass('alert-success alert-error').hide();        
+    })
+    
     // Keeping track of the ajax calls to abort them
     // From: http://stackoverflow.com/a/11612641/1462065
     $.ajaxQ = (function(){
@@ -77,7 +82,7 @@ var update_wheelmap_node = function(wheelmap_id, wheelchair_status) {
             },
             success: function(r) {
                 if (r.success) {          
-                    $alert.removeClass('alert-error').addClass('alert-success');  
+                    $alert.addClass('alert-success');  
                     $alert.text("You successfully updated the node. It will take some time until the change affects wheelmap.");
                 } else {
                     $alert.removeClass('alert-success').addClass('alert-error');  
@@ -85,7 +90,7 @@ var update_wheelmap_node = function(wheelmap_id, wheelchair_status) {
                 }
             },
             error: function() {
-                $alert.removeClass('alert-success').addClass('alert-error');  
+                $alert.addClass('alert-error');  
                 $alert.text("Sorry, there was an error updating the node.");
             },
             complete: function() {
