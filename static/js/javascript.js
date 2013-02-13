@@ -66,6 +66,7 @@ $(document).ready(function() {
 
 var update_wheelmap_node = function(wheelmap_id, wheelchair_status) {
       
+        $alert = $('#alert-edit-node');
         $.ajax({
             dataType: "json",
             url: "/wheelmap/update_node/",
@@ -75,14 +76,20 @@ var update_wheelmap_node = function(wheelmap_id, wheelchair_status) {
                 wheelchairstatus: wheelchair_status
             },
             success: function(r) {
-                if (r.success) {
-                    alert("Successfully updated.");
+                if (r.success) {          
+                    $alert.removeClass('alert-error').addClass('alert-success');  
+                    $alert.text("You successfully updated the node. It will take some time until the change affects wheelmap.");
                 } else {
-                    alert("Something is wrong.");
+                    $alert.removeClass('alert-success').addClass('alert-error');  
+                    $alert.text("Sorry, there was an error updating the node.");
                 }
             },
             error: function() {
-                alert("There was an error.");
+                $alert.removeClass('alert-success').addClass('alert-error');  
+                $alert.text("Sorry, there was an error updating the node.");
+            },
+            complete: function() {
+                 $alert.show();
             }
         });
 }
