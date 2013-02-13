@@ -43,12 +43,15 @@ def startpage():
         foursquare_icon = False
     return render_template('start.html', foursquare_oauth_url = foursquare_oauth_url, foursquare_icon=foursquare_icon, foursquare_firstname=foursquare_firstname)
 
-@app.route('/foursquare/venues/explore/<city>', defaults={'page': 0})
-@app.route('/foursquare/venues/explore/<city>/<int:page>')
-def explore_city(city, page):
+@app.route('/explore/')
+def explore_city():
+    
+    geolocation = request.args.get('geolocation', '')
+    page = request.args.get('page', '', type=int)
+    
     foursquare_client = squarewheel.get_foursquare_client(session)[1]
     try:
-        venues = squarewheel.explore_foursquare(foursquare_client, city, page)
+        venues = squarewheel.explore_foursquare(foursquare_client, geolocation, page)
     except foursquare.FailedGeocode, e:
         return "Foursquare could not find the location"
     else:
@@ -56,9 +59,10 @@ def explore_city(city, page):
 
 
         
-@app.route('/foursquare/venues/lastcheckins', defaults={'page': 0})
-@app.route('/foursquare/venues/lastcheckins/<int:page>')
-def lastcheckins(page):
+@app.route('/lastcheckins/')
+def lastcheckins():
+    page = request.args.get('page', '', type=int)
+    
     (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
     if fq_logged_in:
         venues = squarewheel.get_last_foursquare_checkins(foursquare_client, page)
@@ -66,9 +70,9 @@ def lastcheckins(page):
     else:
         return "Not connected to foursquare."
     
-@app.route('/foursquare/venues/todo', defaults={'page': 0})
-@app.route('/foursquare/venues/todo/<int:page>')
-def todo(page):
+@app.route('/todo/')
+def todo():
+    page = request.args.get('page', '', type=int)
     (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
     if fq_logged_in:
         venues = squarewheel.get_todo_venues(foursquare_client, page)

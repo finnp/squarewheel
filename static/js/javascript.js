@@ -26,9 +26,9 @@ $(document).ready(function() {
     $('#btn-explore-search').click(function(e){
         e.preventDefault();
         if ($("#input-explore-search").val())
-            load_venues( "explore/" + $("#input-explore-search").val());
+            load_venues( "explore/", 0, {geolocation: $("#input-explore-search").val()});
         else
-            load_venues( "explore/" + $("#input-explore-search").attr('placeholder'));
+            load_venues( "explore/", 0, {geolocation: $("#input-explore-search").attr('placeholder')});
     });
     
     $('#btn-node-update').click(function(){
@@ -99,9 +99,11 @@ var update_wheelmap_node = function(wheelmap_id, wheelchair_status) {
         });
 }
 
-var load_venues = function(url, page) {
+var load_venues = function(url, page, params) {
     if ( typeof page == "undefined" ) 
         page = 0
+    if ( typeof params == "undefined" ) 
+        params = {}
 
     // For the first page, clear the screen
     if ( page == 0 )
@@ -112,9 +114,13 @@ var load_venues = function(url, page) {
     $('#venues').append($load_div);
     
     $('#loadmorevenues').hide();
+    
+    // Always include the pagenumber
+    params.page = page;
         
     $.ajax({
-        url: "/foursquare/venues/" + url + "/" + page,
+        url: url,
+        data: params,
         success: function( html ) {
             $('#venues').append(html);
             $('#loadmorevenues').show();

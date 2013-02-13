@@ -63,7 +63,7 @@ def explore_foursquare(foursquare_client, near, page = 0):
     
     per_page = 10
     
-    params = {'limit': per_page, 'offset': page * per_page, 'near': unquote(near)}
+    params = {'limit': per_page, 'offset': page * per_page, 'near': unquote(near).encode('utf-8')}
     
 
     results = foursquare_client.venues.explore(params=params)
