@@ -21,6 +21,7 @@ from config import MONGODB_PORT
 from config import MONGODB_DBNAME
 from config import MONGODB_NAME
 from config import MONGODB_PW
+from config import DEBUG
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -104,6 +105,9 @@ def foursquare_callback():
         
         connection = Connection(MONGODB_HOST, MONGODB_PORT)
         
+        if MONGODB_NAME and MONGODB_PW:
+            connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)
+        
         # <MongoDB>
         session_key = uuid.uuid1()
         session['session_key'] = session_key
@@ -138,8 +142,7 @@ app.secret_key = FLASK_SECRET_KEY
 
 
 if __name__ == '__main__':
-    app.debug = True 
-    #app.debug = False
+    app.debug = DEBUG # True or False
     if app.debug: #exception
         app.run()
     else:
