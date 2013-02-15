@@ -12,6 +12,7 @@ from config import FOURSQUARE_CLIENT_ID
 from config import FOURSQUARE_CALLBACK_URL
 from config import FOURSQUARE_CLIENT_SECRET
 from config import WHEELMAP_API_KEY
+from config import WHEELMAP_API_KEY_VISITOR_EDITS
 from config import MONGODB_NAME
 from config import MONGODB_PW
 from config import MONGODB_HOST
@@ -175,7 +176,7 @@ def json_node_search(name, lat, lng):
     return json.dumps(json_response, indent=4, separators=(',', ': '))
     
 def update_wheelchair_status(node_id, wheelchair_status):
-    wheelmap_client = wheelmap.Wheelmap(WHEELMAP_API_KEY)
+    wheelmap_client = wheelmap.Wheelmap(WHEELMAP_API_KEY_VISITOR_EDITS if WHEELMAP_API_KEY_VISITOR_EDITS else WHEELMAP_API_KEY) 
     return wheelmap_client.nodes_update_wheelchair(node_id=node_id, wheelchair=wheelchair_status)
     
 def get_foursquare_client(session):

@@ -55,16 +55,23 @@
                     </form>
                 </li>
             </ul>
-            <div class="nav pull-right">
                 {% if foursquare_firstname %}
-                    <img alt="user" class="img-rounded" src="{{ foursquare_icon }}"></img>{{ foursquare_firstname }}
+                <ul class="nav pull-right">
+                    <li class="dropdown">
+                      <a href="#" id="drop3" role="button" class="dropdown-toggle" data-toggle="dropdown">
+                          <img alt="user" style="margin-top: -10px; margin-bottom: -10px;" class="img-rounded" src="{{ foursquare_icon }}"> {{ foursquare_firstname }}
+                          <b class="caret"></b></a>
+                      <ul class="dropdown-menu" role="menu" aria-labelledby="drop3">
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Logout</a></li>
+                      </ul>
+                    </li>
+                </ul>
                 {% else %}
-                    <a href="{{- foursquare_oauth_url -}}">
-                        <button class="btn btn-primary btn-info" type="button">Login with <img src="{{- url_for('static', filename='img/foursquare-login.png') -}}"></button>
-                    </a>
+                    <div class="nav pull-right">
+                        <a href="{{- foursquare_oauth_url -}}" class="btn btn-primary btn-info" type="button">Login with <img src="{{- url_for('static', filename='img/foursquare-login.png') -}}"></a>
+                    </div>
                 {% endif %}
-            </div>
-            </div>
+            </ul>
           </div>
         </div>
         <div class="container">
@@ -76,6 +83,7 @@
             <div style="display:none" id="loadmorevenues">
                 <button id="loadmorevenues-button" class="btn btn-primary">Load more <i class="icon-circle-arrow-down icon-white"></i></button>
             </div>
+        <div id="alert-navigation" class="alert alert-error" style="display:none;"></div>
         </div>
             
             <!-- Modal for editing wheelmap nodes -->
@@ -99,7 +107,21 @@
               </div>
             </div>
             
-    <hr class="soften">
+    <!-- Until I find a proper solution
+    <div class="navbar navbar-fixed-bottom">
+          <div class="navbar-inner">
+              <div class="container">
+              <span class="brand">Powered by 
+                <a href="http://www.foursquare.com"><img src="{{- url_for('static', filename='img/foursquare_logo.png') -}}" alt="Foursqure"/></a>
+                <a href="http://www.wheelmap.org"><img src="{{- url_for('static', filename='img/wheelmap_logo.png') -}}" alt ="Wheelmap"/></a>
+                <a href="http://www.openstreetmap.org"><img src="{{- url_for('static', filename='img/osm_logo.png') -}}" alt="OpenStreetMap"/></a>
+                </div>
+          </div>
+    </div>
+    -->
+    
+    
+    
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
     <script src="{{- url_for('static', filename='js/javascript.js')-}}"></script>

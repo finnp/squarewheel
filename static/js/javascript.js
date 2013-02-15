@@ -10,12 +10,13 @@ $(document).ready(function() {
     $("[rel='tooltip']").tooltip();
     
     $('#loadmorevenues-button').click(function(){ 
-        load_venues( $(this).data("current-url"), $(this).data("next-page") );
+        load_venues( $(this).data("current-url"), $(this).data("params") );
     });
     
     $('.brand').click(function(e){
         e.preventDefault();
         $('#venues').html("Loading..");
+        $('#alert-navigation').hide();
         $('#loadmorevenues').hide();
         $.ajaxQ.abortAll();
         $.get("/", function(r){
@@ -26,9 +27,9 @@ $(document).ready(function() {
     $('#btn-explore-search').click(function(e){
         e.preventDefault();
         if ($("#input-explore-search").val())
-            load_venues( "explore/", 0, {geolocation: $("#input-explore-search").val()});
+            load_venues( "explore/", {geolocation: $("#input-explore-search").val()});
         else
-            load_venues( "explore/", 0, {geolocation: $("#input-explore-search").attr('placeholder')});
+            load_venues( "explore/", {geolocation: $("#input-explore-search").attr('placeholder')});
     });
     
     $('#btn-node-update').click(function(){
@@ -99,37 +100,41 @@ var update_wheelmap_node = function(wheelmap_id, wheelchair_status) {
         });
 }
 
-var load_venues = function(url, page, params) {
-    if ( typeof page == "undefined" ) 
-        page = 0
+var load_venues = function(url, params) {
     if ( typeof params == "undefined" ) 
         params = {}
+    if ( typeof params.page == "undefined" ) 
+        params.page = 0
 
     // For the first page, clear the screen
-    if ( page == 0 )
+    if ( params.page == 0 )
         $('#venues').html("")
-        
+           
+    $('#alert-navigation').hide();
+    
     $load_div = $("<div>Loading venues from foursquare... <br/><img alt='Loading' src='/static/img/ajax-loader-big.gif'/><hr class='soften'></div>");
     
     $('#venues').append($load_div);
     
     $('#loadmorevenues').hide();
-    
-    // Always include the pagenumber
-    params.page = page;
-        
+           
     $.ajax({
         url: url,
         data: params,
         success: function( html ) {
             $('#venues').append(html);
             $('#loadmorevenues').show();
-            $('#loadmorevenues-button').data("next-page", ++page);
+            params.page++;
             $('#loadmorevenues-button').data("current-url", url);
+            $('#loadmorevenues-button').data("params", params)
             load_wheelmap_info();
         },
-        error: function() {
-            $('#venues').append("<p>There was a problem. We couldn't reach foursquare, sorry!</p>");
+        error: function(xhr) {
+            if (xhr.responseText)
+                $('#alert-navigation').html(xhr.responseText);
+            else
+                $('#alert-navigation').html("There was a problem with your request, sorry!");
+            $('#alert-navigation').show();
         },
         complete: function() {
             $load_div.remove();

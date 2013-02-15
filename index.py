@@ -28,6 +28,8 @@ app.config.from_object(__name__)
        
 @app.route('/')
 def startpage():
+    foursquare.AUTH_ENDPOINT = 'https://foursquare.com/oauth2/authorize'
+    
     if not request.is_xhr:
         fq_logged_in, foursquare_client = squarewheel.get_foursquare_client(session)
         if fq_logged_in:
@@ -53,7 +55,7 @@ def explore_city():
     try:
         venues = squarewheel.explore_foursquare(foursquare_client, geolocation, page)
     except foursquare.FailedGeocode, e:
-        return "Foursquare could not find the location"
+        return "Foursquare could not find the location", 404
     else:
         return render_template('venue_list.html', venues=venues)
 
@@ -68,7 +70,7 @@ def lastcheckins():
         venues = squarewheel.get_last_foursquare_checkins(foursquare_client, page)
         return render_template('venue_list.html', venues=venues)
     else:
-        return "Not connected to foursquare."
+        return "You have to be connected to foursquare to use this.", 412
     
 @app.route('/todo/')
 def todo():
@@ -78,7 +80,7 @@ def todo():
         venues = squarewheel.get_todo_venues(foursquare_client, page)
         return render_template('venue_list.html', venues=venues)
     else:
-        return "Not connected to foursquare."
+        return "You have to be connected to foursquare to use this.", 412
     
 @app.route('/wheelmap/nodes')
 def get_nodes():
