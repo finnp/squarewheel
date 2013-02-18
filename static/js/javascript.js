@@ -35,7 +35,8 @@ $(document).ready(function() {
     
     $('#btn-node-update').click(function(){
         update_wheelmap_node($(this).data('wheelmap_id'),
-                            $('#form-update-status input:checked').val());
+                            $('#form-update-status input:checked').val(),
+                            $(this).data('$referer_div'));
     });
     
     // Removing the success/error alert when closed in the modal
@@ -71,7 +72,7 @@ $(document).ready(function() {
     
 });
 
-var update_wheelmap_node = function(wheelmap_id, wheelchair_status) {
+var update_wheelmap_node = function(wheelmap_id, wheelchair_status, $refererdiv) {
       
         $alert = $('#alert-edit-node');
         $.ajax({
@@ -86,6 +87,7 @@ var update_wheelmap_node = function(wheelmap_id, wheelchair_status) {
                 if (r.success) {          
                     $alert.addClass('alert-success');  
                     $alert.text("You successfully updated the node. It will take some time until the change affects wheelmap.");
+                    display_wheelchair_status($refererdiv, wheelchair_status);
                 } else {
                     $alert.removeClass('alert-success').addClass('alert-error');  
                     $alert.text("Sorry, there was an error updating the node.");
@@ -157,8 +159,6 @@ var load_wheelmap_info = function() {
         },
         success: function( r ) {
             if ( r.wheelmap ) {
-                // Add class for the status for filtering of visible infos
-                $(div).addClass("wheelchair-" + r.wheelchair);
                 // Change the headline to the name of the venue.
                 // And turn it into a link to wheelmap
                 $(div).find('.nodeheadline > span').hide();
@@ -168,10 +168,12 @@ var load_wheelmap_info = function() {
 
                 // Add the response data to the box
                 $nodeinfo = $(div).find('.nodeinfo');
-                 $nodeinfo.find('.wheelmap-status').text(r.wheelchair);
                 $nodeinfo.find('.wheelmap-description').text(r.wheelchair_description);
                 $nodeinfo.find('address').html(r.address);
-                $nodeinfo.find('.table-unknown').removeClass('table-unknown').addClass('table-' +r.wheelchair);
+                
+                
+                // Change the wheelchair status of the node
+                display_wheelchair_status($(div), r.wheelchair);
                 
                 
                 // Show the nodeinfo
@@ -181,10 +183,9 @@ var load_wheelmap_info = function() {
                         $('#myModalLabel').text(r.name);
                         $('#editwheelmap input[value="' + r.wheelchair + '"]').prop('checked', true);
                         $('#btn-node-update').data('wheelmap_id', r.wheelmap_id);
+                        $('#btn-node-update').data('$referer_div', $(div));
                         $('#editwheelmap').modal('show');
                 });
-                
-                $(div).find('.map img.mapmarker').attr("src", "/static/img/" + r.wheelchair + ".png");
             } else {
                 // Add class for the status for filtering of visible infos
                 $(div).addClass("wheelchair-notfound");
@@ -207,6 +208,30 @@ var load_wheelmap_info = function() {
         });  
     });
 };
+
+var display_wheelchair_status = function($div, wheelchairstatus) {
+    // Do everything to change the status
+    
+    // Delete the used classes for wheelchair-status
+    $div.removeClass("wheelchair-yes");
+    $div.removeClass("wheelchair-no");
+    $div.removeClass("wheelchair-limited");
+    $div.removeClass("wheelchair-unknown");
+    
+    // Add the proper class instead
+    $div.addClass("wheelchair-" + wheelchairstatus);
+    
+    $nodeinfo = $div.find('.nodeinfo');
+    
+    // Change the text
+    $nodeinfo.find('.wheelmap-status').text(wheelchairstatus);
+    
+    // Change the table background-color
+    $nodeinfo.find('tr:first').first().attr('class', 'table-' + wheelchairstatus);
+    
+    // Change the marker on the map to the corresponding image    
+    $div.find('.map img.mapmarker').attr("src", "/static/img/" + wheelchairstatus + ".png");
+} 
 
 var update_filter = function () {
     // Function for filtering the results by wheelchair status
