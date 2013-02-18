@@ -12,9 +12,13 @@
               <div class="container">
             <a class="brand" href="/">SquareWheel</a>
             <ul class="nav">
-                <li><form class="navbar-form pull-left input-append">
-                    <input class="span2" id="input-explore-search" type="text" placeholder="Berlin">
-                    <button class="btn" id="btn-explore-search" type="submit">Explore</button>
+                
+                <li><form class="navbar-form pull-left input-append input-prepend">
+                        <span class="add-on"><i class="icon-search"></i></span>
+                        <input class="input-small" id="input-explore-query" type="text" placeholder="Looking for..">
+                        <span class="add-on"><i class="icon-map-marker"></i></span>
+                        <input class="input-small" id="input-explore-search" type="text" placeholder="Berlin">
+                        <button class="btn" id="btn-explore-search" type="submit">Explore</button>
                 </form></li>
                 <li><a class="load-venues-link" href="lastcheckins">Last Checkins</a></li>
                 <li><a class="load-venues-link" href="todo">To Do</a></li>

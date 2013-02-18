@@ -2,6 +2,10 @@ html {
     overflow-y: scroll;
 }
 
+.navbar-form .add-on {
+    margin-top: 5px;
+}
+
 .navbar-form {
     padding-left: 15px;
 }
