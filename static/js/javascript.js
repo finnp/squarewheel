@@ -25,11 +25,12 @@ $(document).ready(function() {
     });
     
     $('#btn-explore-search').click(function(e){
-        e.preventDefault();
-        if ($("#input-explore-search").val())
-            load_venues( "explore/", {geolocation: $("#input-explore-search").val()});
-        else
-            load_venues( "explore/", {geolocation: $("#input-explore-search").attr('placeholder')});
+        e.preventDefault();          
+        params = {}
+        params.geolocation = $("#input-explore-location").val() ? $("#input-explore-location").val() : $("#input-explore-location").attr('placeholder');
+        params.query = $("#input-explore-query").val() ? $("#input-explore-query").val() : $("#input-explore-query").attr('placeholder');
+            
+        load_venues("explore/", params);
     });
     
     $('#btn-node-update').click(function(){

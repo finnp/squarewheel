@@ -60,12 +60,15 @@ def deg2num(lat_deg, lon_deg, zoom):
   ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
   return (xtile, ytile)
         
-def explore_foursquare(foursquare_client, near, page = 0):
+def explore_foursquare(foursquare_client, near, page = 0, query = False):
     
     per_page = 10
     
     params = {'limit': per_page, 'offset': page * per_page, 'near': unquote(near).encode('utf-8')}
     
+    # Query can be appended optionally
+    if query:
+        params['query'] =  unquote(query).encode('utf-8')
 
     results = foursquare_client.venues.explore(params=params)
 

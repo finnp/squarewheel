@@ -49,11 +49,12 @@ def startpage():
 def explore_city():
     
     geolocation = request.args.get('geolocation', '')
+    query = request.args.get('query', '')
     page = request.args.get('page', '', type=int)
     
     foursquare_client = squarewheel.get_foursquare_client(session)[1]
     try:
-        venues = squarewheel.explore_foursquare(foursquare_client, geolocation, page)
+        venues = squarewheel.explore_foursquare(foursquare_client, geolocation, page, query)
     except foursquare.FailedGeocode, e:
         return "Foursquare could not find the location", 404
     else:
