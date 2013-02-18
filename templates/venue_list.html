@@ -6,7 +6,7 @@
                     <h3>{{ venue.name }}</h3>
                 </div>
                 <div class="span5">
-                    <h3 class="nodeheadline">Loading..</h3>
+                    <h3 class="nodeheadline"><span>Loading...</span><a target="_blank" href="http://wheelmap.org/en/nodes/"></a></h3>
                 </div>
             </div>
             <div class="row-fluid foursquare">
@@ -18,10 +18,17 @@
                     {{ venue.get_map_with_marker()|safe }}
                 </div>
                 <div style="display:none;" class="span3 nodeinfo">
-                    <p><a class="wheelmap-link" href="http://wheelmap.org/en/nodes/">Wheelmap</a><br>
-                    Wheelchair: <span class="wheelmap-status"></span><a class="edit-wheelchair-status">[Edit]</a><br>
-                    Description: <span class="wheelmap-description"></span></p>
-                    <address></address>
+                    <table class="table table-bordered">
+                        <tr class="table-unknown"><td>Wheelchair</td>
+                            <td><span class="wheelmap-status"></span> <a class="edit-wheelchair-status icon-pencil"></td>
+                        </tr>
+                        <tr><td>Description</td>
+                            <td><span class="wheelmap-description"></span></td></tr>
+                        <tr><td>Address</td>
+                            <td><address>
+                            
+                            </address></td></tr>
+                    </table>
                 </div>
                 <div style="display:none;" class="span3 nodenotfound">
                     <p>Look for it yourself on <a class="wheelmap-search-link" href="http://wheelmap.org/en/?lat=0lat0&amp;lon=0lon0&amp;zoom=17">wheelmap</a></p>

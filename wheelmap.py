@@ -101,7 +101,7 @@ class WheelmapNode:
         if self.city:
             if self.postcode:
                 html += self.postcode + " "
-            html += self.city + "<br/>"  
+            html += self.city
         return html
     
     def get_googlemaps_image(self, width = 200, height = 200):

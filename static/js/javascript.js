@@ -160,12 +160,21 @@ var load_wheelmap_info = function() {
                 // Add class for the status for filtering of visible infos
                 $(div).addClass("wheelchair-" + r.wheelchair);
                 // Change the headline to the name of the venue.
-                $(div).find('.nodeheadline').html(r.name);
+                // And turn it into a link to wheelmap
+                $(div).find('.nodeheadline > span').hide();
+                $wheelmaplink = $(div).find('.nodeheadline > a');
+                $wheelmaplink.text(r.name)
+                $wheelmaplink[0].pathname += r.wheelmap_id;
+
                 // Add the response data to the box
                 $nodeinfo = $(div).find('.nodeinfo');
-                $nodeinfo.find('.wheelmap-link')[0].pathname += r.wheelmap_id;
-                $nodeinfo.find('.wheelmap-status').text(r.wheelchair);
+                 $nodeinfo.find('.wheelmap-status').text(r.wheelchair);
                 $nodeinfo.find('.wheelmap-description').text(r.wheelchair_description);
+                $nodeinfo.find('address').html(r.address);
+                $nodeinfo.find('.table-unknown').removeClass('table-unknown').addClass('table-' +r.wheelchair);
+                
+                
+                // Show the nodeinfo
                 $nodeinfo.show();
                 
                 $nodeinfo.find('.edit-wheelchair-status').click(function(){
@@ -180,7 +189,7 @@ var load_wheelmap_info = function() {
                 // Add class for the status for filtering of visible infos
                 $(div).addClass("wheelchair-notfound");
                 // Change headline to not found
-                $(div).find('.nodeheadline').html("Not found on wheelmap");
+                $(div).find('.nodeheadline > span').text("Not found on wheelmap");
                 $nodenotfound = $(div).find(".nodenotfound");
                 $search_link = $nodenotfound.find(".wheelmap-search-link")[0];
                 $search_link.href = $search_link.href.replace("0lat0", $(div).data('lat'));

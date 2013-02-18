@@ -167,13 +167,14 @@ def json_node_search(name, lat, lng):
         json_response["lng"] = node.lng
         json_response["wheelchair"] = node.wheelchair 
         json_response["wheelchair_description"] = node.wheelchair_description
-        json_response["street"] = node.street
-        json_response["housenumber"] = node.housenumber
-        json_response["city"] = node.city
-        json_response["postcode"] = node.postcode
+        #json_response["street"] = node.street
+        #json_response["housenumber"] = node.housenumber
+        #json_response["city"] = node.city
+        #json_response["postcode"] = node.postcode
         json_response["website"] = node.website
         json_response["phone"] = node.phone 
         json_response["node_type"] = node.node_type
+        json_response["address"] = node.get_html_address()
     else: 
         json_response["wheelmap"] = False
     return json.dumps(json_response, indent=4, separators=(',', ': '))
