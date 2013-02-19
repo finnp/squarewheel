@@ -30,6 +30,18 @@ app.config.from_object(__name__)
 def startpage():
     foursquare.AUTH_ENDPOINT = 'https://foursquare.com/oauth2/authorize'
     
+    disconnect = request.args.get('disconnect', '', type=bool)
+    if disconnect:
+        connection = Connection(MONGODB_HOST, MONGODB_PORT)
+        if MONGODB_NAME and MONGODB_PW:
+            connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)
+        collection = connection[MONGODB_DBNAME].users
+        to_delete = collection.find_one({'session_key': unicode(session['session_key'])})
+        collection.remove(to_delete) 
+        # </MongoDB>
+        session.pop('session_key', None)
+
+    
     if not request.is_xhr:
         fq_logged_in, foursquare_client = squarewheel.get_foursquare_client(session)
         if fq_logged_in:
@@ -99,39 +111,36 @@ def foursquare_callback():
     if not fq_logged_in:
     
         code = request.args.get('code', '')
-        
-        print "Code received: %s" % code
-        
+               
         access_token = foursquare_client.oauth.get_token(code)
         
-        print "Access Token received: %s" % access_token
-        
         foursquare_client.set_access_token(access_token)
+                
+        # Get the user id
         
-        print "Access token set."
+        foursquare_id = foursquare_client.users()['user']['id']
         
+         # <MongoDB>      
         connection = Connection(MONGODB_HOST, MONGODB_PORT)
+        
         
         if MONGODB_NAME and MONGODB_PW:
             connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)
         
-        # <MongoDB>
+ 
         session_key = uuid.uuid1()
         session['session_key'] = session_key
         collection = connection[MONGODB_DBNAME].users
-        user = {'session_key': unicode(session_key), 'access_token': unicode(access_token) }
-        collection.insert(user)    
+        #user = {'_id': unicode(foursquare_id), 'session_key': unicode(session_key), 'access_token': unicode(access_token) }
+        data = {'$set': {'session_key': unicode(session_key), 'access_token': unicode(access_token) } }
+        #collection.insert(user)    
+        collection.update({'_id': unicode(foursquare_id)}, data, upsert = True)
         # </MongoDB>
            
         foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user(foursquare_client)
         return render_template('start.html', foursquare_firstname=foursquare_firstname, foursquare_icon=foursquare_icon)
     else:
         return "Already logged in"
-
-@app.route('/disconnect')
-def foursquare_disconnect():
-    session.pop('session_key', None)
-    return "Session cleared"
 
 @app.route('/wheelmap/update_node/', methods=['POST'])
 def wheelmap_update_node():
