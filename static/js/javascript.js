@@ -291,9 +291,10 @@ var comment_share_click = function() {
         type: 'POST',
         data: params,
         success: function(r) {
-            if (r.success) 
+            if (r.success) {
                 $this.text('Sent!');
-            else {
+                $this.unbind('click');
+            } else {
                 alert("Error: " + r.error);
                 $this.removeClass('disabled');
                 $this.text("Send");
