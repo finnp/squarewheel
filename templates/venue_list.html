@@ -19,7 +19,14 @@
             </div>
             <div class="row-fluid foursquare">
                 <div class="span3">
-                    <address></address>                 
+                    <textarea id="comment-text-{{- venue.foursquare_id -}}" rows="2" placeholder="Add a tip.."></textarea>
+                    <label class="checkbox">
+                        <input type="checkbox" disabled="disabled" class="checkbox-wheelmaplink" id="checkbox-wheelmaplink-{{- venue.foursquare_id -}}" value="wheelmaplink"> Add wheelmap link
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="checkbox-hashtags-{{- venue.foursquare_id -}}" value="hashtags"> Add hashtags
+                    </label>
+                    <button class="btn btn-success comment-share-button" data-venueid="{{- venue.foursquare_id -}}">Share</button>
                 </div>
                 <div class="span2 map">
                     {{ venue.get_map_with_marker()|safe }}

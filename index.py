@@ -101,6 +101,26 @@ def get_nodes():
     lng = request.args.get('lng', '', type=float)
     name = request.args.get('name', '')
     return squarewheel.json_node_search(name, lat, lng)
+
+@app.route('/foursquare/addcomment/', methods=['POST'])
+def foursquare_addcomment():
+    '''Adding new comments to foursquare venues'''
+    
+    foursquare_client = squarewheel.get_foursquare_client(session)[1]
+    
+    if request.is_xhr:
+        venueId = request.form['venueid']
+        text = request.form['text']
+        if request.form['wheelmapid']:
+            url = 'http://wheelmap.org/en/nodes/' + request.form['wheelmapid']
+        else:
+            url = False
+        try:
+            squarewheel.foursquare_add_comment(foursquare_client, venueId, text, url)
+        except foursquare.Other, e:
+            return jsonify(error=str(e))
+        else:
+            return jsonify(success=True)
         
         
 @app.route('/foursquare')
@@ -144,15 +164,13 @@ def foursquare_callback():
 
 @app.route('/wheelmap/update_node/', methods=['POST'])
 def wheelmap_update_node():
-    # Works but maybe change it, so that it to POST/PUT, so it can not so easily
-    # be used to change nodes through the url
     if request.is_xhr:
         if squarewheel.update_wheelchair_status(request.form['wheelmapid'],
                                                 request.form['wheelchairstatus']):
             return jsonify(success=True)
         else:
             abort(400)
-        
+            
 
 app.secret_key = FLASK_SECRET_KEY
 

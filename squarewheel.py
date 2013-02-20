@@ -198,3 +198,14 @@ def get_foursquare_client(session):
             return (True, foursquare.Foursquare(access_token=user['access_token'], version="20130128"))
     return (False, foursquare.Foursquare(client_id=FOURSQUARE_CLIENT_ID, client_secret=FOURSQUARE_CLIENT_SECRET, redirect_uri=FOURSQUARE_CALLBACK_URL, version="20130128"))
    
+def foursquare_add_comment(foursquare_client, venueId, text, url):
+    
+    params = {'text': text, 'venueId': venueId}
+    if url:
+        params['url'] = url
+            
+    foursquare_client.tips.add(params=params)
+    
+    return True
+    
+    

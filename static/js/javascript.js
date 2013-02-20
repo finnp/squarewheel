@@ -43,6 +43,7 @@ $(document).ready(function() {
     $('#editwheelmap').on('hidden', function () {
         $('#alert-edit-node').removeClass('alert-success alert-error').hide();        
     })
+       
     
     // Keeping track of the ajax calls to abort them
     // From: http://stackoverflow.com/a/11612641/1462065
@@ -130,6 +131,10 @@ var load_venues = function(url, params) {
             params.page++;
             $('#loadmorevenues-button').data("current-url", url);
             $('#loadmorevenues-button').data("params", params)
+            
+            // When loaded add functionality for adding comments
+            $('.comment-share-button').click(comment_share_click);
+            
             load_wheelmap_info();
         },
         error: function(xhr) {
@@ -186,6 +191,14 @@ var load_wheelmap_info = function() {
                         $('#btn-node-update').data('$referer_div', $(div));
                         $('#editwheelmap').modal('show');
                 });
+                
+                // Add information for foursquare comment link
+                // And enable it only if a wheelmap node was found
+                $checkboxwheelmaplink = $(div).find('.checkbox-wheelmaplink')
+                $checkboxwheelmaplink.removeAttr('disabled');
+                $checkboxwheelmaplink.attr('checked', 'checked');
+                $checkboxwheelmaplink.data('wheelmapid', r.wheelmap_id);
+
             } else {
                 // Add class for the status for filtering of visible infos
                 $(div).addClass("wheelchair-notfound");
@@ -253,3 +266,39 @@ var update_filter = function () {
         }
     });
 }
+
+var comment_share_click = function() {
+    // Handles the clicks for the comment share button
+    
+    // Load state for button (sending..)
+    var $this = $(this);
+    
+    $this.addClass('disabled').text('Sending..');
+    
+    params = {}
+    venueid =  $this.data('venueid')
+    params['venueid'] = venueid;
+    params['text'] = $('#comment-text-' + venueid).val();
+    $wheelmaplink = $('#checkbox-wheelmaplink-' + venueid)
+    if ($wheelmaplink.prop('checked'))
+        params['wheelmapid'] = $wheelmaplink.data('wheelmapid');
+    else
+        params['wheelmapid'] = ""    
+    
+    $.ajax({
+        url: '/foursquare/addcomment/',
+        dataType: 'json',
+        type: 'POST',
+        data: params,
+        success: function(r) {
+            if (r.success) 
+                $this.text('Sent!');
+            else {
+                alert("Error: " + r.error);
+                $this.removeClass('disabled');
+                $this.text("Send");
+            }
+        }    
+    });
+};
+
