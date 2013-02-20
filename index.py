@@ -64,13 +64,13 @@ def explore_city():
     query = request.args.get('query', '')
     page = request.args.get('page', '', type=int)
     
-    foursquare_client = squarewheel.get_foursquare_client(session)[1]
+    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
     try:
         venues = squarewheel.explore_foursquare(foursquare_client, geolocation, page, query)
     except foursquare.FailedGeocode, e:
         return "Foursquare could not find the location", 404
     else:
-        return render_template('venue_list.html', venues=venues)
+        return render_template('venue_list.html', venues=venues, fq_logged_in = fq_logged_in)
 
 
         
@@ -81,7 +81,7 @@ def lastcheckins():
     (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
     if fq_logged_in:
         venues = squarewheel.get_last_foursquare_checkins(foursquare_client, page)
-        return render_template('venue_list.html', venues=venues)
+        return render_template('venue_list.html', venues=venues, fq_logged_in = True)
     else:
         return "You have to be connected to foursquare to use this.", 412
     
@@ -91,7 +91,7 @@ def todo():
     (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
     if fq_logged_in:
         venues = squarewheel.get_todo_venues(foursquare_client, page)
-        return render_template('venue_list.html', venues=venues)
+        return render_template('venue_list.html', venues=venues, fq_logged_in = True)
     else:
         return "You have to be connected to foursquare to use this.", 412
     
