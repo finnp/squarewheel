@@ -194,10 +194,30 @@ var load_wheelmap_info = function() {
                 
                 // Add information for foursquare comment link
                 // And enable it only if a wheelmap node was found
-                $checkboxwheelmaplink = $(div).find('.checkbox-wheelmaplink')
+                $checkboxwheelmaplink = $(div).find('.checkbox-wheelmaplink');
                 $checkboxwheelmaplink.removeAttr('disabled');
                 $checkboxwheelmaplink.attr('checked', 'checked');
                 $checkboxwheelmaplink.data('wheelmapid', r.wheelmap_id);
+                
+                // Add information to add hashtag toggle
+                if( r.wheelchair != 'unknown' ) {
+                    $checkboxhashtags = $(div).find('.checkbox-hashtags');
+                    $checkboxhashtags.removeAttr('disabled');
+                    $checkboxhashtags.data('wheelmapstatus', r.wheelchair);
+                    $checkboxhashtags.parent().append(' ' + wheelchairstatus_to_hashtag(r.wheelchair));
+                    $checkboxhashtags.click(function() {
+                        $this = $(this);
+                        $textarea = $this.parent().siblings('textarea');
+                        if ( $this.prop('checked') ) {
+                            $textarea.val($textarea.val() + wheelchairstatus_to_hashtag(r.wheelchair));
+                        } else {
+                            // Removes all hashtags now, should be only the added ones
+                            var hashtagregexp = new RegExp('#access(pass|limited|fail)','g');
+                            $textarea.val( $textarea.val().replace(hashtagregexp, '') );
+                        }
+                    });
+                }
+
 
             } else {
                 // Add class for the status for filtering of visible infos
@@ -303,3 +323,16 @@ var comment_share_click = function() {
     });
 };
 
+var wheelchairstatus_to_hashtag = function(wheelchair) {
+    switch(wheelchair)
+        {
+        case 'yes':
+            return '#accesspass';
+        case 'limited':
+            return '#accesslimited';
+        case 'no':
+            return '#accessfail';
+        default:
+            return '';
+        }
+};
