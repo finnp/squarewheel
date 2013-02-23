@@ -10,7 +10,7 @@
         <div class="navbar navbar-fixed-top">
           <div class="navbar-inner">
               <div class="container">
-            <a class="brand" href="/">SquareWheel</a>
+            <a class="brand load-content" href="/">SquareWheel</a>
             <ul class="nav">
                 
                 <li><form class="navbar-form pull-left input-append input-prepend">
@@ -20,8 +20,8 @@
                         <input class="input-small" id="input-explore-location" type="text" placeholder="Berlin">
                         <button class="btn" id="btn-explore-search" type="submit">Explore</button>
                 </form></li>
-                <li><a class="load-venues-link" href="lastcheckins">Last Checkins</a></li>
-                <li><a class="load-venues-link" href="todo">To Do</a></li>
+                <li><a class="load-venues load-content" href="lastcheckins">Last Checkins</a></li>
+                <li><a class="load-venues load-content" href="todo">To Do</a></li>
                 <li class="divider-vertical"></li>
                 <li>
                     <form class="navbar-form">
@@ -86,6 +86,12 @@
             </div>
             <div style="display:none" id="loadmorevenues">
                 <button id="loadmorevenues-button" class="btn btn-primary">Load more <i class="icon-circle-arrow-down icon-white"></i></button>
+            </div>
+            <div style="display:none" id="loading">
+               <span id="loading-text">Loading venues from foursquare... </span>
+               <br/>
+               <img alt='Loading' src='/static/img/ajax-loader-big.gif'/>
+               <hr class='soften'>
             </div>
         <div id="alert-navigation" class="alert alert-error" style="display:none;"></div>
         </div>

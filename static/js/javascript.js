@@ -1,28 +1,38 @@
 $(document).ready(function() {
     
-    $(".load-venues-link").click(function(e) {
+    // Add clickhandler for navbar navigation
+    $('.load-content').click(function(e) {        
             e.preventDefault();
-            loadVenues( $(this).attr('href') );
+    
+            // Clear the view and stop the ajax calls
+            $('#alert-navigation').hide();
+            $.ajaxQ.abortAll();
+            
+            $this = $(this);
+            if ( $this.hasClass('load-venues') ) {
+                // Load venues
+                loadVenues( $this.attr('href') );
+            } else {
+                // Load non-venue content
+                loadingDisplay(false, true);
+                $('#loadmorevenues').hide();
+                $.get("/", function(r){
+                    $('#venues').html(r); 
+                    $('#loading').hide();
+                });
+            }
     });
-      
-    $(".wheelchair-filter-checkbox").click( updateFilter );
-    
-    $("[rel='tooltip']").tooltip();
-    
+       
+    // Add clickhandler for the load more venues button
     $('#loadmorevenues-button').click(function(){ 
         loadVenues( $(this).data("current-url"), $(this).data("params") );
     });
+      
+    // Add clickhandler to the filter so it gets updates
+    $(".wheelchair-filter-checkbox").click( updateFilter );
     
-    $('.brand').click(function(e){
-        e.preventDefault();
-        $('#venues').html("Loading..");
-        $('#alert-navigation').hide();
-        $('#loadmorevenues').hide();
-        $.ajaxQ.abortAll();
-        $.get("/", function(r){
-            $('#venues').html(r); 
-        });
-    });
+    // Activate the helping tooltips (for filter)
+    $("[rel='tooltip']").tooltip();
     
     $('#btn-explore-search').click(function(e){
         e.preventDefault();          
@@ -108,16 +118,8 @@ var loadVenues = function(url, params) {
         params = {}
     if ( typeof params.page == "undefined" ) 
         params.page = 0
-
-    // For the first page, clear the screen
-    if ( params.page == 0 )
-        $('#venues').html("")
-           
-    $('#alert-navigation').hide();
-    
-    $loadDiv = $("<div>Loading venues from foursquare... <br/><img alt='Loading' src='/static/img/ajax-loader-big.gif'/><hr class='soften'></div>");
-    
-    $('#venues').append($loadDiv);
+   
+    loadingDisplay(true, params.page == 0);
     
     $('#loadmorevenues').hide();
            
@@ -144,7 +146,7 @@ var loadVenues = function(url, params) {
             $('#alert-navigation').show();
         },
         complete: function() {
-            $loadDiv.remove();
+            $('#loading').hide();
         }
     });
 }
@@ -335,3 +337,21 @@ var wheelchairstatusToHashtag = function(wheelchair) {
             return '';
         }
 };
+
+var loadingDisplay = function(venue, clear) {
+
+    // Clear the current content if given
+    if (clear) {
+        $('#venues').empty();
+    }
+    
+    // Adjust the loading text
+    if (venue) {
+        $('#loading-text').text('Loading venues from foursquare.');
+    } else {
+        $('#loading-text').text('Loading page.');
+    }
+    
+    $('#loading').show();
+
+}
