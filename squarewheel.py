@@ -161,19 +161,19 @@ def json_node_search(name, lat, lng):
     json_response = {}
     if node:
         json_response["wheelmap"] = True 
-        json_response["wheelmap_id"] = node.node_id
+        json_response["wheelmapId"] = node.node_id
         json_response["name"] = node.name
         json_response["lat"] = node.lat
         json_response["lng"] = node.lng
         json_response["wheelchair"] = node.wheelchair 
-        json_response["wheelchair_description"] = node.wheelchair_description
+        json_response["wheelchairDescription"] = node.wheelchair_description
         #json_response["street"] = node.street
         #json_response["housenumber"] = node.housenumber
         #json_response["city"] = node.city
         #json_response["postcode"] = node.postcode
         json_response["website"] = node.website
         json_response["phone"] = node.phone 
-        json_response["node_type"] = node.node_type
+        json_response["nodeType"] = node.node_type
         json_response["address"] = node.get_html_address()
     else: 
         json_response["wheelmap"] = False

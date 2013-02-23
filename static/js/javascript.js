@@ -2,15 +2,15 @@ $(document).ready(function() {
     
     $(".load-venues-link").click(function(e) {
             e.preventDefault();
-            load_venues( $(this).attr('href') );
+            loadVenues( $(this).attr('href') );
     });
       
-    $(".wheelchair-filter-checkbox").click( update_filter );
+    $(".wheelchair-filter-checkbox").click( updateFilter );
     
     $("[rel='tooltip']").tooltip();
     
     $('#loadmorevenues-button').click(function(){ 
-        load_venues( $(this).data("current-url"), $(this).data("params") );
+        loadVenues( $(this).data("current-url"), $(this).data("params") );
     });
     
     $('.brand').click(function(e){
@@ -30,13 +30,13 @@ $(document).ready(function() {
         params.geolocation = $("#input-explore-location").val() ? $("#input-explore-location").val() : $("#input-explore-location").attr('placeholder');
         params.query = $("#input-explore-query").val() ? $("#input-explore-query").val() : $("#input-explore-query").attr('placeholder');
             
-        load_venues("explore/", params);
+        loadVenues("explore/", params);
     });
     
     $('#btn-node-update').click(function(){
-        update_wheelmap_node($(this).data('wheelmap_id'),
+        updateWheelmapNode($(this).data('wheelmapId'),
                             $('#form-update-status input:checked').val(),
-                            $(this).data('$referer_div'));
+                            $(this).data('$refererDiv'));
     });
     
     // Removing the success/error alert when closed in the modal
@@ -73,22 +73,21 @@ $(document).ready(function() {
     
 });
 
-var update_wheelmap_node = function(wheelmap_id, wheelchair_status, $refererdiv) {
-      
+var updateWheelmapNode = function(wheelmapId,  wheelchairStatus, $refererdiv) {
         $alert = $('#alert-edit-node');
         $.ajax({
             dataType: "json",
             url: "/wheelmap/update_node/",
             type: "POST",
             data: {
-                wheelmapid: wheelmap_id,
-                wheelchairstatus: wheelchair_status
+                wheelmapid: wheelmapId,
+                wheelchairstatus:  wheelchairStatus
             },
             success: function(r) {
                 if (r.success) {          
                     $alert.addClass('alert-success');  
                     $alert.text("You successfully updated the node. It will take some time until the change affects wheelmap.");
-                    display_wheelchair_status($refererdiv, wheelchair_status);
+                    displayWheelchairStatus($refererdiv,  wheelchairStatus);
                 } else {
                     $alert.removeClass('alert-success').addClass('alert-error');  
                     $alert.text("Sorry, there was an error updating the node.");
@@ -104,7 +103,7 @@ var update_wheelmap_node = function(wheelmap_id, wheelchair_status, $refererdiv)
         });
 }
 
-var load_venues = function(url, params) {
+var loadVenues = function(url, params) {
     if ( typeof params == "undefined" ) 
         params = {}
     if ( typeof params.page == "undefined" ) 
@@ -116,9 +115,9 @@ var load_venues = function(url, params) {
            
     $('#alert-navigation').hide();
     
-    $load_div = $("<div>Loading venues from foursquare... <br/><img alt='Loading' src='/static/img/ajax-loader-big.gif'/><hr class='soften'></div>");
+    $loadDiv = $("<div>Loading venues from foursquare... <br/><img alt='Loading' src='/static/img/ajax-loader-big.gif'/><hr class='soften'></div>");
     
-    $('#venues').append($load_div);
+    $('#venues').append($loadDiv);
     
     $('#loadmorevenues').hide();
            
@@ -133,9 +132,9 @@ var load_venues = function(url, params) {
             $('#loadmorevenues-button').data("params", params)
             
             // When loaded add functionality for adding comments
-            $('.comment-share-button').click(comment_share_click);
+            $('.comment-share-button').click(commentShareClick);
             
-            load_wheelmap_info();
+            loadWheelmapInfo();
         },
         error: function(xhr) {
             if (xhr.responseText)
@@ -145,12 +144,12 @@ var load_venues = function(url, params) {
             $('#alert-navigation').show();
         },
         complete: function() {
-            $load_div.remove();
+            $loadDiv.remove();
         }
     });
 }
 
-var load_wheelmap_info = function() {
+var loadWheelmapInfo = function() {
     $.each( $('div#venues>div.venue'), function(index, div) {
        
         // Load Wheelmap Node
@@ -169,16 +168,16 @@ var load_wheelmap_info = function() {
                 $(div).find('.nodeheadline > span').hide();
                 $wheelmaplink = $(div).find('.nodeheadline > a');
                 $wheelmaplink.text(r.name)
-                $wheelmaplink[0].pathname += r.wheelmap_id;
+                $wheelmaplink[0].pathname += r.wheelmapId;
 
                 // Add the response data to the box
                 $nodeinfo = $(div).find('.nodeinfo');
-                $nodeinfo.find('.wheelmap-description').text(r.wheelchair_description);
+                $nodeinfo.find('.wheelmap-description').text(r.wheelchairDescription);
                 $nodeinfo.find('address').html(r.address);
                 
                 
                 // Change the wheelchair status of the node
-                display_wheelchair_status($(div), r.wheelchair);
+                displayWheelchairStatus($(div), r.wheelchair);
                 
                 
                 // Show the nodeinfo
@@ -187,8 +186,8 @@ var load_wheelmap_info = function() {
                 $nodeinfo.find('.edit-wheelchair-status').click(function(){
                         $('#myModalLabel').text(r.name);
                         $('#editwheelmap input[value="' + r.wheelchair + '"]').prop('checked', true);
-                        $('#btn-node-update').data('wheelmap_id', r.wheelmap_id);
-                        $('#btn-node-update').data('$referer_div', $(div));
+                        $('#btn-node-update').data('wheelmapId', r.wheelmapId);
+                        $('#btn-node-update').data('$refererDiv', $(div));
                         $('#editwheelmap').modal('show');
                 });
                 
@@ -197,19 +196,19 @@ var load_wheelmap_info = function() {
                 $checkboxwheelmaplink = $(div).find('.checkbox-wheelmaplink');
                 $checkboxwheelmaplink.removeAttr('disabled');
                 $checkboxwheelmaplink.attr('checked', 'checked');
-                $checkboxwheelmaplink.data('wheelmapid', r.wheelmap_id);
+                $checkboxwheelmaplink.data('wheelmapid', r.wheelmapId);
                 
                 // Add information to add hashtag toggle
                 if( r.wheelchair != 'unknown' ) {
                     $checkboxhashtags = $(div).find('.checkbox-hashtags');
                     $checkboxhashtags.removeAttr('disabled');
                     $checkboxhashtags.data('wheelmapstatus', r.wheelchair);
-                    $checkboxhashtags.parent().append(' ' + wheelchairstatus_to_hashtag(r.wheelchair));
+                    $checkboxhashtags.parent().append(' ' + wheelchairstatusToHashtag(r.wheelchair));
                     $checkboxhashtags.click(function() {
                         $this = $(this);
                         $textarea = $this.parent().siblings('textarea');
                         if ( $this.prop('checked') ) {
-                            $textarea.val($textarea.val() + wheelchairstatus_to_hashtag(r.wheelchair));
+                            $textarea.val($textarea.val() + wheelchairstatusToHashtag(r.wheelchair));
                         } else {
                             // Removes all hashtags now, should be only the added ones
                             var hashtagregexp = new RegExp('#access(pass|limited|fail)','g');
@@ -225,15 +224,15 @@ var load_wheelmap_info = function() {
                 // Change headline to not found
                 $(div).find('.nodeheadline > span').text("Not found on wheelmap");
                 $nodenotfound = $(div).find(".nodenotfound");
-                $search_link = $nodenotfound.find(".wheelmap-search-link")[0];
-                $search_link.href = $search_link.href.replace("0lat0", $(div).data('lat'));
-                $search_link.href = $search_link.href.replace("0lon0", $(div).data('lng'));
+                $searchLink = $nodenotfound.find(".wheelmap-search-link")[0];
+                $searchLink.href = $searchLink.href.replace("0lat0", $(div).data('lat'));
+                $searchLink.href = $searchLink.href.replace("0lon0", $(div).data('lng'));
                 $nodenotfound.show();
                                
                 $(div).find('.map img.mapmarker').attr("src", "/static/img/notfound.png");
             }
             // Hide the ones, that are not wanted
-            update_filter();
+            updateFilter();
         },
         error: function() {
             $(div).find('.nodeheadline').html("Error: There was a problem contacting wheelmap.");
@@ -242,7 +241,7 @@ var load_wheelmap_info = function() {
     });
 };
 
-var display_wheelchair_status = function($div, wheelchairstatus) {
+var displayWheelchairStatus = function($div, wheelchairstatus) {
     // Do everything to change the status
     
     // Delete the used classes for wheelchair-status
@@ -266,19 +265,19 @@ var display_wheelchair_status = function($div, wheelchairstatus) {
     $div.find('.map img.mapmarker').attr("src", "/static/img/" + wheelchairstatus + ".png");
 } 
 
-var update_filter = function () {
+var updateFilter = function () {
     // Function for filtering the results by wheelchair status
     
     $(".wheelchair-filter-checkbox").each(function() {
-        wheelchair_status = $(this).data("wheelchair");
+         wheelchairStatus = $(this).data("wheelchair");
         if ( $(this).is(":checked") ) {
-            $(".wheelchair-" + wheelchair_status).each(function(){
+            $(".wheelchair-" +  wheelchairStatus).each(function(){
                 if( !$(this).hasClass('in') ) {
                     $(this).collapse('show');
                 }
             });
         } else {
-            $(".wheelchair-" + wheelchair_status).each(function(){
+            $(".wheelchair-" +  wheelchairStatus).each(function(){
                 if( $(this).hasClass('in') ) {
                     $(this).collapse('hide');
                 }
@@ -287,7 +286,7 @@ var update_filter = function () {
     });
 }
 
-var comment_share_click = function() {
+var commentShareClick = function() {
     // Handles the clicks for the comment share button
     
     // Load state for button (sending..)
@@ -323,7 +322,7 @@ var comment_share_click = function() {
     });
 };
 
-var wheelchairstatus_to_hashtag = function(wheelchair) {
+var wheelchairstatusToHashtag = function(wheelchair) {
     switch(wheelchair)
         {
         case 'yes':
