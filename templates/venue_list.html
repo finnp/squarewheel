@@ -25,9 +25,11 @@
                         <input type="checkbox" disabled="disabled" class="checkbox-wheelmaplink" id="checkbox-wheelmaplink-{{- venue.foursquare_id -}}" value="wheelmaplink"> Add wheelmap link
                     </label>
                     <label class="checkbox">
-                        <input type="checkbox" id="checkbox-hashtags-{{- venue.foursquare_id -}}" value="hashtags"> Add hashtags
+                        <input type="checkbox" disabled="disabled" class="checkbox-hashtags" id="checkbox-hashtags-{{- venue.foursquare_id -}}" value="hashtags"> Add hashtag
                     </label>
                     <button class="btn btn-success comment-share-button" data-venueid="{{- venue.foursquare_id -}}">Share</button>
+                {% else %}
+                    <p>Log in with foursquare to add comments.</p>
                 {% endif %}
                 </div>
                 <div class="span2 map">
