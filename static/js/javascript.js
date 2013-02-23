@@ -22,6 +22,18 @@ $(document).ready(function() {
                 });
             }
     });
+    
+    // Add clickhandler for the explore search
+    $('#btn-explore-search').click(function(e){
+        e.preventDefault();          
+        $location = $("#input-explore-location");
+        $query = $("#input-explore-query");
+        params = {
+            geolocation: $location.val() ? $location.val() : $location.attr('placeholder'),
+            query: $query.val() ? $query.val() : $query.attr('placeholder')
+        };
+        loadVenues("explore/", params);
+    });
        
     // Add clickhandler for the load more venues button
     $('#loadmorevenues-button').click(function(){ 
@@ -33,18 +45,10 @@ $(document).ready(function() {
     
     // Activate the helping tooltips (for filter)
     $("[rel='tooltip']").tooltip();
-    
-    $('#btn-explore-search').click(function(e){
-        e.preventDefault();          
-        params = {}
-        params.geolocation = $("#input-explore-location").val() ? $("#input-explore-location").val() : $("#input-explore-location").attr('placeholder');
-        params.query = $("#input-explore-query").val() ? $("#input-explore-query").val() : $("#input-explore-query").attr('placeholder');
-            
-        loadVenues("explore/", params);
-    });
-    
-    $('#btn-node-update').click(function(){
-        updateWheelmapNode($(this).data('wheelmapId'),
+       
+    // Add clickhandler for the update button in the modal
+    $('#node-update-send').click(function(){
+        updateWheelmapNode( $(this).data('wheelmapId'),
                             $('#form-update-status input:checked').val(),
                             $(this).data('$refererDiv'));
     });
@@ -188,8 +192,8 @@ var loadWheelmapInfo = function() {
                 $nodeinfo.find('.edit-wheelchair-status').click(function(){
                         $('#myModalLabel').text(r.name);
                         $('#editwheelmap input[value="' + r.wheelchair + '"]').prop('checked', true);
-                        $('#btn-node-update').data('wheelmapId', r.wheelmapId);
-                        $('#btn-node-update').data('$refererDiv', $(div));
+                        $('#node-update-send').data('wheelmapId', r.wheelmapId);
+                        $('#node-update-send').data('$refererDiv', $(div));
                         $('#editwheelmap').modal('show');
                 });
                 
