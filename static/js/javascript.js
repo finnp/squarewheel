@@ -60,9 +60,9 @@ $(document).ready(function() {
        
     
     // Keeping track of the ajax calls to abort them
-    // From: http://stackoverflow.com/a/11612641/1462065
+    // Adaoted from: http://stackoverflow.com/a/11612641/1462065
     $.ajaxQ = (function(){
-      var id = 0, Q = {};
+      var id = 0, Q = [];
 
       $(document).ajaxSend(function(e, jqx){
         jqx._id = ++id;
@@ -74,12 +74,9 @@ $(document).ready(function() {
 
       return {
         abortAll: function(){
-          var r = [];
           $.each(Q, function(i, jqx){
-            r.push(jqx._id);
             jqx.abort();
           });
-          return r;
         }
       };
 
