@@ -9,18 +9,8 @@ import os
 import json
 import squarewheel
 import foursquare
-import uuid
 import logging
-from mongokit import Connection
-#from config import FOURSQUARE_CLIENT_ID
-#from config import FOURSQUARE_CALLBACK_URL
-#from config import FOURSQUARE_CLIENT_SECRET
 from config import FLASK_SECRET_KEY
-from config import MONGODB_HOST
-from config import MONGODB_PORT
-from config import MONGODB_DBNAME
-from config import MONGODB_NAME
-from config import MONGODB_PW
 from config import DEBUG
 
 app = Flask(__name__)
@@ -32,13 +22,7 @@ def startpage():
     
     disconnect = request.args.get('disconnect', '', type=bool)
     if disconnect:
-        connection = Connection(MONGODB_HOST, MONGODB_PORT)
-        if MONGODB_NAME and MONGODB_PW:
-            connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)
-        collection = connection[MONGODB_DBNAME].users
-        to_delete = collection.find_one({'session_key': unicode(session['session_key'])})
-        collection.remove(to_delete) 
-        # </MongoDB>
+        squarewheel.user_disconnect(session['session_key'])
         session.pop('session_key', None)
 
     
@@ -131,32 +115,16 @@ def foursquare_callback():
     if not fq_logged_in:
     
         code = request.args.get('code', '')
-               
-        access_token = foursquare_client.oauth.get_token(code)
         
+        # Ger the access_token       
+        access_token = foursquare_client.oauth.get_token(code)
         foursquare_client.set_access_token(access_token)
                 
-        # Get the user id
-        
+        # Get the user id        
         foursquare_id = foursquare_client.users()['user']['id']
         
-         # <MongoDB>      
-        connection = Connection(MONGODB_HOST, MONGODB_PORT)
-        
-        
-        if MONGODB_NAME and MONGODB_PW:
-            connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)
-        
- 
-        session_key = uuid.uuid1()
-        session['session_key'] = session_key
-        collection = connection[MONGODB_DBNAME].users
-        #user = {'_id': unicode(foursquare_id), 'session_key': unicode(session_key), 'access_token': unicode(access_token) }
-        data = {'$set': {'session_key': unicode(session_key), 'access_token': unicode(access_token) } }
-        #collection.insert(user)    
-        collection.update({'_id': unicode(foursquare_id)}, data, upsert = True)
-        # </MongoDB>
-           
+        session['session_key'] = squarewheel.user_login(access_token, foursquare_id)
+
         foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user(foursquare_client)
         return render_template('start.html', foursquare_firstname=foursquare_firstname, foursquare_icon=foursquare_icon)
     else:

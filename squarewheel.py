@@ -8,6 +8,7 @@ import wheelmap
 import foursquare
 import logging
 import sys
+import uuid
 from config import FOURSQUARE_CLIENT_ID
 from config import FOURSQUARE_CALLBACK_URL
 from config import FOURSQUARE_CLIENT_SECRET
@@ -183,16 +184,20 @@ def update_wheelchair_status(node_id, wheelchair_status):
     wheelmap_client = wheelmap.Wheelmap(WHEELMAP_API_KEY_VISITOR_EDITS if WHEELMAP_API_KEY_VISITOR_EDITS else WHEELMAP_API_KEY) 
     return wheelmap_client.nodes_update_wheelchair(node_id=node_id, wheelchair=wheelchair_status)
     
+def mongodb_get_users():
+    """Connects to mongodb and returns users collection"""
+    
+    connection = Connection(MONGODB_HOST, MONGODB_PORT)
+    if MONGODB_NAME and MONGODB_PW:
+        connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)    
+    return connection[MONGODB_DBNAME].users
+
+    
 def get_foursquare_client(session):
     """Returns a tupel (user_logged_in, foursquare client)"""
-    
-    # Connection to database
-    connection = Connection(MONGODB_HOST, MONGODB_PORT)
-    
+        
     if 'session_key' in session:
-        if MONGODB_NAME and MONGODB_PW:
-            connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)
-        collection = connection[MONGODB_DBNAME].users
+        collection = mongodb_get_users()
         user = collection.find_one({'session_key': unicode(session['session_key']) })
         if user:
             return (True, foursquare.Foursquare(access_token=user['access_token'], version="20130128"))
@@ -207,5 +212,25 @@ def foursquare_add_comment(foursquare_client, venueId, text, url):
     foursquare_client.tips.add(params=params)
     
     return True
+
+    
+def user_login(access_token, foursquare_id):
+    """Logs in the user and returns a session_key"""
+    
+    # Get the collection of users from mongodb
+    users = mongodb_get_users()
+    
+    # Generate the session key
+    session_key = uuid.uuid1()
+    
+    data = {'$set': {'session_key': unicode(session_key), 'access_token': unicode(access_token) } }
+    users.update({'_id': unicode(foursquare_id)}, data, upsert = True)
+    
+    return session_key
+
+def user_disconnect(session_key):
+    users = mongodb_get_users()
+    to_delete = users.find_one({'session_key': unicode(session_key)})
+    users.remove(to_delete) 
     
     
