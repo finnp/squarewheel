@@ -8,14 +8,14 @@ $(document).ready(function() {
             $('#alert-navigation').hide();
             $.ajaxQ.abortAll();
             
-            $this = $(this);
+            var $this = $(this);
             if ( $this.hasClass('load-venues') ) {
                 // Load venues
                 loadVenues( $this.attr('href') );
             } else {
                 // Load non-venue content
                 loadingDisplay(false, true);
-                $('#loadmorevenues').hide();
+                $('#loadmore').hide();
                 $.get("/", function(r){
                     $('#venues').html(r); 
                     $('#loading').hide();
@@ -25,9 +25,14 @@ $(document).ready(function() {
     
     // Add clickhandler for the explore search
     $('#btn-explore-search').click(function(e){
-        e.preventDefault();          
-        $location = $("#input-explore-location");
-        $query = $("#input-explore-query");
+        e.preventDefault();      
+        
+        // Clear the view and stop the ajax calls
+        $('#alert-navigation').hide();
+        $.ajaxQ.abortAll();
+                
+        var $location = $("#input-explore-location");
+        var $query = $("#input-explore-query");
         params = {
             geolocation: $location.val() ? $location.val() : $location.attr('placeholder'),
             query: $query.val() ? $query.val() : $query.attr('placeholder')
@@ -36,7 +41,7 @@ $(document).ready(function() {
     });
        
     // Add clickhandler for the load more venues button
-    $('#loadmorevenues-button').click(function(){ 
+    $('#loadmore').click(function(){ 
         loadVenues( $(this).data("current-url"), $(this).data("params") );
     });
       
@@ -60,9 +65,9 @@ $(document).ready(function() {
        
     
     // Keeping track of the ajax calls to abort them
-    // Adaoted from: http://stackoverflow.com/a/11612641/1462065
+    // Adapted from: http://stackoverflow.com/a/11612641/1462065
     $.ajaxQ = (function(){
-      var id = 0, Q = [];
+      var id = 0, Q = {};
 
       $(document).ajaxSend(function(e, jqx){
         jqx._id = ++id;
@@ -115,29 +120,38 @@ var updateWheelmapNode = function(wheelmapId,  wheelchairStatus, $refererdiv) {
 }
 
 var loadVenues = function(url, params) {
-    if ( typeof params == "undefined" ) 
+    
+    // Define default values
+    if ( typeof params === 'undefined' ) 
         params = {}
-    if ( typeof params.page == "undefined" ) 
+    if ( typeof params.page === 'undefined' ) 
         params.page = 0
    
+   // Show the loading display and only clear
+   // the view if we start from page 0
     loadingDisplay(true, params.page == 0);
     
-    $('#loadmorevenues').hide();
-           
+    
+    var $loadmore = $('#loadmore').hide();
+    
+    // Requst the venues, they will be returned as HTML
     $.ajax({
         url: url,
         data: params,
         success: function( html ) {
             $('#venues').append(html);
-            $('#loadmorevenues').show();
+
+            // Save the needed data for the 'Load more' button
+            // and display it
+            $loadmore.show()
             params.page++;
-            $('#loadmorevenues-button').data("current-url", url);
-            $('#loadmorevenues-button').data("params", params)
+            $loadmore.data("current-url", url).data("params", params);
+
+            // Load data from Wheelmap
+            loadWheelmapInfo();
             
             // When loaded add functionality for adding comments
             $('.comment-share-button').click(commentShareClick);
-            
-            loadWheelmapInfo();
         },
         error: function(xhr) {
             if (xhr.responseText)
@@ -169,7 +183,7 @@ var loadWheelmapInfo = function() {
                 // Change the headline to the name of the venue.
                 // And turn it into a link to wheelmap
                 $(div).find('.nodeheadline > span').hide();
-                $wheelmaplink = $(div).find('.nodeheadline > a');
+                var $wheelmaplink = $(div).find('.nodeheadline > a');
                 $wheelmaplink.text(r.name)
                 $wheelmaplink[0].pathname += r.wheelmapId;
 
@@ -196,20 +210,20 @@ var loadWheelmapInfo = function() {
                 
                 // Add information for foursquare comment link
                 // And enable it only if a wheelmap node was found
-                $checkboxwheelmaplink = $(div).find('.checkbox-wheelmaplink');
+                var $checkboxwheelmaplink = $(div).find('.checkbox-wheelmaplink');
                 $checkboxwheelmaplink.removeAttr('disabled');
                 $checkboxwheelmaplink.attr('checked', 'checked');
                 $checkboxwheelmaplink.data('wheelmapid', r.wheelmapId);
                 
                 // Add information to add hashtag toggle
                 if( r.wheelchair != 'unknown' ) {
-                    $checkboxhashtags = $(div).find('.checkbox-hashtags');
+                    var $checkboxhashtags = $(div).find('.checkbox-hashtags');
                     $checkboxhashtags.removeAttr('disabled');
                     $checkboxhashtags.data('wheelmapstatus', r.wheelchair);
                     $checkboxhashtags.parent().append(' ' + wheelchairstatusToHashtag(r.wheelchair));
                     $checkboxhashtags.click(function() {
-                        $this = $(this);
-                        $textarea = $this.parent().siblings('textarea');
+                        var $this = $(this);
+                        var $textarea = $this.parent().siblings('textarea');
                         if ( $this.prop('checked') ) {
                             $textarea.val($textarea.val() + wheelchairstatusToHashtag(r.wheelchair));
                         } else {
@@ -226,8 +240,8 @@ var loadWheelmapInfo = function() {
                 $(div).addClass("wheelchair-notfound");
                 // Change headline to not found
                 $(div).find('.nodeheadline > span').text("Not found on wheelmap");
-                $nodenotfound = $(div).find(".nodenotfound");
-                $searchLink = $nodenotfound.find(".wheelmap-search-link")[0];
+                var $nodenotfound = $(div).find(".nodenotfound");
+                var $searchLink = $nodenotfound.find(".wheelmap-search-link")[0];
                 $searchLink.href = $searchLink.href.replace("0lat0", $(div).data('lat'));
                 $searchLink.href = $searchLink.href.replace("0lon0", $(div).data('lng'));
                 $nodenotfound.show();
@@ -256,7 +270,7 @@ var displayWheelchairStatus = function($div, wheelchairstatus) {
     // Add the proper class instead
     $div.addClass("wheelchair-" + wheelchairstatus);
     
-    $nodeinfo = $div.find('.nodeinfo');
+    var $nodeinfo = $div.find('.nodeinfo');
     
     // Change the text
     $nodeinfo.find('.wheelmap-status').text(wheelchairstatus);
@@ -272,7 +286,7 @@ var updateFilter = function () {
     // Function for filtering the results by wheelchair status
     
     $(".wheelchair-filter-checkbox").each(function() {
-         wheelchairStatus = $(this).data("wheelchair");
+        var wheelchairStatus = $(this).data("wheelchair");
         if ( $(this).is(":checked") ) {
             $(".wheelchair-" +  wheelchairStatus).each(function(){
                 if( !$(this).hasClass('in') ) {
@@ -297,11 +311,11 @@ var commentShareClick = function() {
     
     $this.addClass('disabled').text('Sending..');
     
-    params = {}
-    venueid =  $this.data('venueid')
+    var params = {}
+    var venueid =  $this.data('venueid')
     params['venueid'] = venueid;
     params['text'] = $('#comment-text-' + venueid).val();
-    $wheelmaplink = $('#checkbox-wheelmaplink-' + venueid)
+    var $wheelmaplink = $('#checkbox-wheelmaplink-' + venueid)
     if ($wheelmaplink.prop('checked'))
         params['wheelmapid'] = $wheelmaplink.data('wheelmapid');
     else
