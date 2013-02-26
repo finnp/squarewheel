@@ -40,10 +40,11 @@ def startpage():
         foursquare_icon = False
     return render_template('start.html', foursquare_oauth_url = foursquare_oauth_url, foursquare_icon=foursquare_icon, foursquare_firstname=foursquare_firstname)
 
-@app.route('/foursquare/<endpoint>')
+@app.route('/foursquare/<path:endpoint>/')
 def getvenues(endpoint):
+    endpoint = endpoint.split('?')[0]
     page = request.args.get('page', '', type=int)
-    if(endpoint == 'explore'):
+    if(endpoint == 'venues/explore'):
         geolocation = request.args.get('geolocation', '')
         query = request.args.get('query', '')
         page = request.args.get('page', '', type=int)
