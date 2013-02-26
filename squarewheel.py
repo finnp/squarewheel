@@ -16,6 +16,7 @@ from flask import session
 
 # Local
 import wheelmap
+import easyfoursquare as fq
 from config import FOURSQUARE_CLIENT_ID
 from config import FOURSQUARE_CALLBACK_URL
 from config import FOURSQUARE_CLIENT_SECRET
@@ -52,17 +53,17 @@ def deg2num(lat_deg, lon_deg, zoom):
     ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
     return (xtile, ytile)
            
-def get_venues(foursquare_client, endpoint, page = 0, params = {}):
+def get_venues(endpoint, page = 0, params = {}):
     per_page = 10
     params['limit'] = per_page
     params['offset'] = page * per_page
     
     if endpoint == 'todo':
-        items = foursquare_client.lists('self/todos', params=params)['list']['listItems']['items']
+        items = fq.request('lists/self/todos',params=params)['list']['listItems']['items']
     elif endpoint == 'lastcheckins':
-        items = foursquare_client.users.checkins(params=params)['checkins']['items']
+        items = fq.request('users/checkins',params=params)['checkins']['items']
     elif endpoint == 'explore':
-        items = foursquare_client.venues.explore(params=params)['groups'][0]['items'] 
+        items = fq.request('venues/explore',params=params)['groups'][0]['items'] 
     else:
         raise Exception('No endpoint')
     
@@ -104,14 +105,14 @@ def search_wheelmap (lat, lng, interval, name, n):
     else:
         return False
 
-def get_foursquare_user(foursquare_client):
+def get_foursquare_user():
     """Takes the foursquare token for the user and returns the username and an icon as a tupel"""
     
-    user = foursquare_client.users()["user"]
+    user = fq.request('users/self')['user']
     
-    user["photo"]["icon"] = user["photo"]["prefix"] + "36x36" + user["photo"]["suffix"]
+    user['photo']['icon'] = user['photo']['prefix'] + '36x36' + user['photo']['suffix']
     
-    return (user["firstName"], user["photo"]["icon"])
+    return (user['firstName'], user['photo']['icon'])
     
 def json_node_search(name, lat, lng):
     node = search_wheelmap(lat, lng, 0.004, name, 200)
@@ -149,16 +150,16 @@ def mongodb_get_users():
     return connection[MONGODB_DBNAME].users
 
     
-def get_foursquare_client():
+def fq_logged_in():
     """Returns a tupel (user_logged_in, foursquare client)"""
         
     if 'session_key' in session:
         collection = mongodb_get_users()
         user = collection.find_one({'session_key': unicode(session['session_key']) })
         if user:
-            return (True, foursquare.Foursquare(access_token=user['access_token'], version="20130128"))
-    return (False, foursquare.Foursquare(client_id=FOURSQUARE_CLIENT_ID, client_secret=FOURSQUARE_CLIENT_SECRET, redirect_uri=FOURSQUARE_CALLBACK_URL, version="20130128"))
-   
+            return True
+    return False
+
 def foursquare_add_comment(foursquare_client, venueId, text, url):
     
     params = {'text': text, 'venueId': venueId}
@@ -166,6 +167,7 @@ def foursquare_add_comment(foursquare_client, venueId, text, url):
         params['url'] = url
             
     foursquare_client.tips.add(params=params)
+    fq.request('tips/add',params=params,method='POST')
     
     return True
 

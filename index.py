@@ -9,6 +9,7 @@ from urllib2 import unquote
 import os
 import json
 import squarewheel
+import easyfoursquare as fq
 import foursquare
 import logging
 from config import FLASK_SECRET_KEY
@@ -19,19 +20,18 @@ app.config.from_object(__name__)
        
 @app.route('/')
 def startpage():
-    foursquare.AUTH_ENDPOINT = 'https://foursquare.com/oauth2/authorize'
-    
+
     disconnect = request.args.get('disconnect', '', type=bool)
     if disconnect:
         squarewheel.user_disconnect()
     
     if not request.is_xhr:
-        fq_logged_in, foursquare_client = squarewheel.get_foursquare_client()
+        fq_logged_in = squarewheel.fq_logged_in()
         if fq_logged_in:
-            foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user(foursquare_client)
+            foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user()
             foursquare_oauth_url = False
         else:
-            foursquare_oauth_url = foursquare_client.oauth.auth_url()
+            foursquare_oauth_url = fq.oauth_url()
             foursquare_firstname = False
             foursquare_icon = False
     else:
@@ -53,10 +53,10 @@ def getvenues(endpoint):
     else:
         params = {}
     
-    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client()
+    fq_logged_in = squarewheel.fq_logged_in()
     
     try:
-        venues = squarewheel.get_venues(foursquare_client, endpoint, page, params)
+        venues = squarewheel.get_venues(endpoint, page, params)
     except Exception, e:
         return str(e), 500
     else:
@@ -72,8 +72,6 @@ def get_nodes():
 @app.route('/foursquare/addcomment/', methods=['POST'])
 def foursquare_addcomment():
     '''Adding new comments to foursquare venues'''
-    
-    foursquare_client = squarewheel.get_foursquare_client()[1]
     
     if request.is_xhr:
         venueId = request.form['venueid']
