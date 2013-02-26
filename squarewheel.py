@@ -51,59 +51,24 @@ def deg2num(lat_deg, lon_deg, zoom):
     xtile = int((lon_deg + 180.0) / 360.0 * n)
     ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
     return (xtile, ytile)
-        
-def explore_foursquare(foursquare_client, near, page = 0, query = False):
-    
+           
+def get_venues(foursquare_client, endpoint, page = 0, params = {}):
     per_page = 10
+    params['limit'] = per_page
+    params['offset'] = page * per_page
     
-    params = {'limit': per_page, 'offset': page * per_page, 'near': unquote(near).encode('utf-8')}
-    
-    # Query can be appended optionally
-    if query:
-        params['query'] =  unquote(query).encode('utf-8')
-
-    results = foursquare_client.venues.explore(params=params)
-
+    if endpoint == 'lists/self/todos':
+        items = foursquare_client.lists("self/todos", params=params)['list']['listItems']['items']
+    elif endpoint == 'users/checkins':
+        items = foursquare_client.users.checkins(params=params)['checkins']['items']
+    elif endpoint == 'venues/explore':
+        items = foursquare_client.venues.explore(params=params)['groups'][0]['items'] 
+    else:
+        raise Exception('No endpoint')
     
     venues = []
-    
-    for item in results["groups"][0]["items"]:
-        venue_data = FoursquareVenue( item["venue"] )
-        venues.append( venue_data )
-        
-    return venues
-    
-def get_last_foursquare_checkins(foursquare_client, page = 0):
-    
-    per_page = 10
-    
-    params = {'limit': per_page, 'offset': page * per_page}
-    
-    results = foursquare_client.users.checkins(params=params)
-    
-    venues = []
-    
-    for item in results["checkins"]["items"]:
-        venue_data = FoursquareVenue( item["venue"] )
-        venues.append( venue_data )
-    
-    return venues
-
-
-def get_todo_venues(foursquare_client, page = 0):
-    
-    per_page = 10
-    
-    params = {'limit': per_page, 'offset': page * per_page}
-    
-    results = foursquare_client.lists("self/todos", params=params)
-    
-    venues = []
-    
-    for item in results["list"]["listItems"]["items"]:
-        venue_data = FoursquareVenue( item["venue"] )
-        venues.append( venue_data )
-        
+    for item in items:
+        venues.append( FoursquareVenue( item['venue'] ) )
     return venues
 
 def search_wheelmap (lat, lng, interval, name, n):

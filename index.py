@@ -5,6 +5,7 @@ from flask import session
 from flask import g
 from flask import jsonify
 from urllib2 import urlopen
+from urllib2 import unquote
 import os
 import json
 import squarewheel
@@ -40,15 +41,19 @@ def startpage():
     return render_template('start.html', foursquare_oauth_url = foursquare_oauth_url, foursquare_icon=foursquare_icon, foursquare_firstname=foursquare_firstname)
 
 @app.route('/explore/')
-def explore_city():
+def explore():
     
     geolocation = request.args.get('geolocation', '')
     query = request.args.get('query', '')
     page = request.args.get('page', '', type=int)
     
+    params = {'near': unquote(geolocation).encode('utf-8')}
+    if query:
+        params['query'] = unquote(query).encode('utf-8')
+    
     (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client()
     try:
-        venues = squarewheel.explore_foursquare(foursquare_client, geolocation, page, query)
+        venues = squarewheel.get_venues(foursquare_client, 'venues/explore', page, params)
     except foursquare.FailedGeocode, e:
         return "Foursquare could not find the location", 404
     else:
@@ -62,7 +67,7 @@ def lastcheckins():
     
     (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client()
     if fq_logged_in:
-        venues = squarewheel.get_last_foursquare_checkins(foursquare_client, page)
+        venues = squarewheel.get_venues(foursquare_client, 'users/checkins', page)
         return render_template('venue_list.html', venues=venues, fq_logged_in = True)
     else:
         return "You have to be connected to foursquare to use this.", 412
@@ -72,7 +77,7 @@ def todo():
     page = request.args.get('page', '', type=int)
     (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client()
     if fq_logged_in:
-        venues = squarewheel.get_todo_venues(foursquare_client, page)
+        venues = squarewheel.get_venues(foursquare_client, 'lists/self/todos', page)
         return render_template('venue_list.html', venues=venues, fq_logged_in = True)
     else:
         return "You have to be connected to foursquare to use this.", 412
