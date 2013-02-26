@@ -1,17 +1,16 @@
+import os
+from urllib2 import urlopen
+from urllib2 import unquote
+
 from flask import Flask
 from flask import render_template
 from flask import request
 from flask import session
 from flask import g
 from flask import jsonify
-from urllib2 import urlopen
-from urllib2 import unquote
-import os
-import json
+
 import squarewheel
 import easyfoursquare as fq
-import foursquare
-import logging
 from config import FLASK_SECRET_KEY
 from config import DEBUG
 
