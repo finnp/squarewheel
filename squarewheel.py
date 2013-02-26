@@ -57,11 +57,11 @@ def get_venues(foursquare_client, endpoint, page = 0, params = {}):
     params['limit'] = per_page
     params['offset'] = page * per_page
     
-    if endpoint == 'lists/self/todos':
-        items = foursquare_client.lists("self/todos", params=params)['list']['listItems']['items']
-    elif endpoint == 'users/checkins':
+    if endpoint == 'todo':
+        items = foursquare_client.lists('self/todos', params=params)['list']['listItems']['items']
+    elif endpoint == 'lastcheckins':
         items = foursquare_client.users.checkins(params=params)['checkins']['items']
-    elif endpoint == 'venues/explore':
+    elif endpoint == 'explore':
         items = foursquare_client.venues.explore(params=params)['groups'][0]['items'] 
     else:
         raise Exception('No endpoint')
