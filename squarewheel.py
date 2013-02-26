@@ -1,14 +1,20 @@
-from urllib2 import urlopen
-from urllib2 import unquote
+# Standard libraries
 import json
 import difflib
 import math
 import re
-import wheelmap
-import foursquare
 import logging
 import sys
 import uuid
+from urllib2 import urlopen
+from urllib2 import unquote
+
+# Third party
+import foursquare 
+from mongokit import Connection
+
+# Local
+import wheelmap
 from config import FOURSQUARE_CLIENT_ID
 from config import FOURSQUARE_CALLBACK_URL
 from config import FOURSQUARE_CLIENT_SECRET
@@ -19,10 +25,8 @@ from config import MONGODB_PW
 from config import MONGODB_HOST
 from config import MONGODB_DBNAME
 from config import MONGODB_PORT
-from mongokit import Connection
 
-printstatus = False
-
+# Add logging handler that puts everything to the console
 loghandler = logging.StreamHandler(stream=sys.stdout)
 foursquare.log.addHandler(loghandler)
 foursquare.log.setLevel(logging.DEBUG)
@@ -34,24 +38,7 @@ class FoursquareVenue:
         self.lng = json_venue["location"]["lng"]
         self.name = json_venue["name"]
         self.wheelmap_node = None
-    
-    def get_foursquare_venue_url(self):
-        return "https://foursquare.com/v/%s" % self.foursquare_id
-        
-    def get_openstreetmap_image(self, zoom = 16):
-        (xtile, ytile) = deg2num(self.lat, self.lng, zoom)
-        uri = "http://b.tile.openstreetmap.org/%s/%s/%s.png" % (zoom, xtile, ytile)
-        return uri
-    
-    def get_map_with_marker(self):
-        html =  "<div style='position:relative'>"
-        html += "<div style='position:absolute; left:69px; top:69px;' >"
-        html += "<img src='/static/img/ajax-loader.gif' class='mapmarker' alt='Marker'/>"
-        html += "</div>"
-        html += "<img src='%s' alt='Map' class='img-circle'/>" % self.get_openstreetmap_image(16)
-        html += "</div>"
-        return html
-        
+        (self.xtile, self.ytile) = deg2num(self.lat, self.lng, 16)        
             
 # By OpenStreetMap
 def deg2num(lat_deg, lon_deg, zoom):

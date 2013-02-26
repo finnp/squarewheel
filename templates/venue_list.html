@@ -11,7 +11,7 @@
         <div class="venue collapse in" data-lat="{{- venue.lat -}}" data-lng="{{- venue.lng -}}" data-name="{{- venue.name -}}">
             <div class="row-fluid">
                 <div class="span5 venueheadline">
-                    <h3><a target="_blank" href="{{ venue.get_foursquare_venue_url() }}">{{ venue.name }}</a></h3>
+                    <h3><a target="_blank" href="https://foursquare.com/v/{{- venue.foursquare_id -}}">{{ venue.name }}</a></h3>
                 </div>
                 <div class="span5">
                     <h3 class="nodeheadline"><span>Loading...</span><a target="_blank" href="http://wheelmap.org/en/nodes/"></a></h3>
@@ -33,7 +33,12 @@
                 {% endif %}
                 </div>
                 <div class="span2 map">
-                    {{ venue.get_map_with_marker()|safe }}
+                    <div style='position:relative'>
+                    <div style='position:absolute; left:69px; top:69px;' >
+                        <img src='/static/img/ajax-loader.gif' class='mapmarker' alt='Marker'/>
+                    </div>
+                        <img src='http://b.tile.openstreetmap.org/16/{{- venue.xtile -}}/{{- venue.ytile -}}.png' alt='Map' class='img-circle'/>
+                    </div>
                 </div>
                 <div style="display:none;" class="span3 nodeinfo">
                     <table class="table table-bordered">
