@@ -37,7 +37,7 @@ $(document).ready(function() {
             geolocation: $location.val() ? $location.val() : $location.attr('placeholder'),
             query: $query.val() ? $query.val() : $query.attr('placeholder')
         };
-        loadVenues("foursquare/explore", params);
+        loadVenues("foursquare/venues/explore", params);
     });
        
     // Add clickhandler for the load more venues button

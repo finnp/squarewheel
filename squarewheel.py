@@ -3,14 +3,12 @@ import json
 import difflib
 import math
 import re
-import logging
 import sys
 import uuid
 from urllib2 import urlopen
 from urllib2 import unquote
 
 # Third party
-import foursquare 
 from mongokit import Connection
 from flask import session
 
@@ -28,10 +26,7 @@ from config import MONGODB_HOST
 from config import MONGODB_DBNAME
 from config import MONGODB_PORT
 
-# Add logging handler that puts everything to the console
-loghandler = logging.StreamHandler(stream=sys.stdout)
-foursquare.log.addHandler(loghandler)
-foursquare.log.setLevel(logging.DEBUG)
+fq.set_credentials(FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET, FOURSQUARE_CALLBACK_URL)
 
 class FoursquareVenue:
     __slots__ = ('foursquare_id', 'lat', 'lng', 'name', 'xtile', 'ytile')
@@ -58,14 +53,16 @@ def get_venues(endpoint, page = 0, params = {}):
     params['limit'] = per_page
     params['offset'] = page * per_page
     
-    if endpoint == 'todo':
-        items = fq.request('lists/self/todos',params=params)['list']['listItems']['items']
-    elif endpoint == 'lastcheckins':
-        items = fq.request('users/checkins',params=params)['checkins']['items']
-    elif endpoint == 'explore':
-        items = fq.request('venues/explore',params=params)['groups'][0]['items'] 
+    fq_r = fq.request(endpoint,params=params)
+    
+    if endpoint == 'lists/self/todos':
+        items = fq_r['list']['listItems']['items']
+    elif endpoint == 'users/self/checkins':
+        items = fq_r['checkins']['items']
+    elif endpoint == 'venues/explore':
+        items = fq_r['groups'][0]['items'] 
     else:
-        raise Exception('No endpoint')
+        raise Exception('This endpoint does not exist.')
     
     venues = []
     for item in items:
@@ -160,19 +157,18 @@ def fq_logged_in():
             return True
     return False
 
-def foursquare_add_comment(foursquare_client, venueId, text, url):
+def foursquare_add_comment(venueId, text, url):
     
     params = {'text': text, 'venueId': venueId}
     if url:
         params['url'] = url
             
-    foursquare_client.tips.add(params=params)
     fq.request('tips/add',params=params,method='POST')
     
     return True
 
     
-def user_login(access_token, foursquare_id):
+def user_login():
     """Logs in the user and returns a session_key"""
     
     # Get the collection of users from mongodb
@@ -181,15 +177,22 @@ def user_login(access_token, foursquare_id):
     # Generate the session key
     session_key = uuid.uuid1()
     
-    data = {'$set': {'session_key': unicode(session_key), 'access_token': unicode(access_token) } }
+    data = {'$set': {'session_key': unicode(session_key), 'access_token': unicode(fq.user['access_token']) } }
+    
+    foursquare_id = fq.request('users/self')['user']['id']
+    
     users.update({'_id': unicode(foursquare_id)}, data, upsert = True)
     
     return session_key
 
 def user_disconnect():    
-    users = mongodb_get_users()
-    to_delete = users.find_one({'session_key': unicode(session['session_key'])})
-    users.remove(to_delete) 
-    session.pop('session_key', None)
+    if 'session_key' in session:
+        users = mongodb_get_users()
+        to_delete = users.find_one({'session_key': unicode(session['session_key'])})
+        users.remove(to_delete) 
+        session.pop('session_key', None)
+    if 'access_token' in fq.user:
+        fq.user['access_token'] = False
+   
     
     

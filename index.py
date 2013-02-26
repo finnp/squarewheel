@@ -81,7 +81,7 @@ def foursquare_addcomment():
         else:
             url = False
         try:
-            squarewheel.foursquare_add_comment(foursquare_client, venueId, text, url)
+            squarewheel.foursquare_add_comment(venueId, text, url)
         except foursquare.Other, e:
             return jsonify(error=str(e))
         else:
@@ -91,22 +91,18 @@ def foursquare_addcomment():
 @app.route('/foursquare')
 def foursquare_callback():
     
-    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client()
+    fq_logged_in = squarewheel.fq_logged_in()
     
     if not fq_logged_in:
     
         code = request.args.get('code', '')
         
-        # Ger the access_token       
-        access_token = foursquare_client.oauth.get_token(code)
-        foursquare_client.set_access_token(access_token)
-                
-        # Get the user id        
-        foursquare_id = foursquare_client.users()['user']['id']
-        
-        session['session_key'] = squarewheel.user_login(access_token, foursquare_id)
+        # Set the access_token       
+        fq.download_token(code)
+                   
+        session['session_key'] = squarewheel.user_login()
 
-        foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user(foursquare_client)
+        foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user()
         return render_template('start.html', foursquare_firstname=foursquare_firstname, foursquare_icon=foursquare_icon)
     else:
         return "Already logged in"
