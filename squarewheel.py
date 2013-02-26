@@ -12,6 +12,7 @@ from urllib2 import unquote
 # Third party
 import foursquare 
 from mongokit import Connection
+from flask import session
 
 # Local
 import wheelmap
@@ -32,21 +33,24 @@ foursquare.log.addHandler(loghandler)
 foursquare.log.setLevel(logging.DEBUG)
 
 class FoursquareVenue:
+    __slots__ = ('foursquare_id', 'lat', 'lng', 'name', 'xtile', 'ytile')
     def __init__(self, json_venue):
+        """Takes a foursquare venue from the official API"""
         self.foursquare_id = json_venue["id"]
         self.lat = json_venue["location"]["lat"]
         self.lng = json_venue["location"]["lng"]
         self.name = json_venue["name"]
-        self.wheelmap_node = None
         (self.xtile, self.ytile) = deg2num(self.lat, self.lng, 16)        
             
 # By OpenStreetMap
 def deg2num(lat_deg, lon_deg, zoom):
-  lat_rad = math.radians(lat_deg)
-  n = 2.0 ** zoom
-  xtile = int((lon_deg + 180.0) / 360.0 * n)
-  ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
-  return (xtile, ytile)
+    """Takes latitude, longitude and zoomlevel and returns 
+    the titles on openstreetmap we are looking for"""
+    lat_rad = math.radians(lat_deg)
+    n = 2.0 ** zoom
+    xtile = int((lon_deg + 180.0) / 360.0 * n)
+    ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
+    return (xtile, ytile)
         
 def explore_foursquare(foursquare_client, near, page = 0, query = False):
     
@@ -180,7 +184,7 @@ def mongodb_get_users():
     return connection[MONGODB_DBNAME].users
 
     
-def get_foursquare_client(session):
+def get_foursquare_client():
     """Returns a tupel (user_logged_in, foursquare client)"""
         
     if 'session_key' in session:
@@ -215,9 +219,10 @@ def user_login(access_token, foursquare_id):
     
     return session_key
 
-def user_disconnect(session_key):
+def user_disconnect():    
     users = mongodb_get_users()
-    to_delete = users.find_one({'session_key': unicode(session_key)})
+    to_delete = users.find_one({'session_key': unicode(session['session_key'])})
     users.remove(to_delete) 
+    session.pop('session_key', None)
     
     

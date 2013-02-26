@@ -22,12 +22,10 @@ def startpage():
     
     disconnect = request.args.get('disconnect', '', type=bool)
     if disconnect:
-        squarewheel.user_disconnect(session['session_key'])
-        session.pop('session_key', None)
-
+        squarewheel.user_disconnect()
     
     if not request.is_xhr:
-        fq_logged_in, foursquare_client = squarewheel.get_foursquare_client(session)
+        fq_logged_in, foursquare_client = squarewheel.get_foursquare_client()
         if fq_logged_in:
             foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user(foursquare_client)
             foursquare_oauth_url = False
@@ -48,7 +46,7 @@ def explore_city():
     query = request.args.get('query', '')
     page = request.args.get('page', '', type=int)
     
-    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
+    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client()
     try:
         venues = squarewheel.explore_foursquare(foursquare_client, geolocation, page, query)
     except foursquare.FailedGeocode, e:
@@ -62,7 +60,7 @@ def explore_city():
 def lastcheckins():
     page = request.args.get('page', '', type=int)
     
-    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
+    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client()
     if fq_logged_in:
         venues = squarewheel.get_last_foursquare_checkins(foursquare_client, page)
         return render_template('venue_list.html', venues=venues, fq_logged_in = True)
@@ -72,7 +70,7 @@ def lastcheckins():
 @app.route('/todo/')
 def todo():
     page = request.args.get('page', '', type=int)
-    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
+    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client()
     if fq_logged_in:
         venues = squarewheel.get_todo_venues(foursquare_client, page)
         return render_template('venue_list.html', venues=venues, fq_logged_in = True)
@@ -90,7 +88,7 @@ def get_nodes():
 def foursquare_addcomment():
     '''Adding new comments to foursquare venues'''
     
-    foursquare_client = squarewheel.get_foursquare_client(session)[1]
+    foursquare_client = squarewheel.get_foursquare_client()[1]
     
     if request.is_xhr:
         venueId = request.form['venueid']
@@ -110,7 +108,7 @@ def foursquare_addcomment():
 @app.route('/foursquare')
 def foursquare_callback():
     
-    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client(session)
+    (fq_logged_in, foursquare_client) = squarewheel.get_foursquare_client()
     
     if not fq_logged_in:
     
