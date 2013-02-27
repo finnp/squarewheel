@@ -26,7 +26,7 @@ from config import MONGODB_HOST
 from config import MONGODB_DBNAME
 from config import MONGODB_PORT
 
-fq.set_credentials(FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET, FOURSQUARE_CALLBACK_URL)
+fq.cred = (FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET, FOURSQUARE_CALLBACK_URL)
 
 class FoursquareVenue:
     __slots__ = ('foursquare_id', 'lat', 'lng', 'name', 'xtile', 'ytile')
@@ -154,6 +154,7 @@ def fq_logged_in():
         collection = mongodb_get_users()
         user = collection.find_one({'session_key': unicode(session['session_key']) })
         if user:
+            fq.access_token = user['access_token']
             return True
     return False
 
@@ -177,7 +178,7 @@ def user_login():
     # Generate the session key
     session_key = uuid.uuid1()
     
-    data = {'$set': {'session_key': unicode(session_key), 'access_token': unicode(fq.user['access_token']) } }
+    data = {'$set': {'session_key': unicode(session_key), 'access_token': unicode(fq.access_token) } }
     
     foursquare_id = fq.request('users/self')['user']['id']
     
@@ -191,8 +192,8 @@ def user_disconnect():
         to_delete = users.find_one({'session_key': unicode(session['session_key'])})
         users.remove(to_delete) 
         session.pop('session_key', None)
-    if 'access_token' in fq.user:
-        fq.user['access_token'] = False
+    if fq.access_token:
+        fq.access_token = False
    
     
     

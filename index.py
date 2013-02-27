@@ -39,7 +39,25 @@ def startpage():
         foursquare_icon = False
     return render_template('start.html', foursquare_oauth_url = foursquare_oauth_url, foursquare_icon=foursquare_icon, foursquare_firstname=foursquare_firstname)
 
-@app.route('/foursquare/<path:endpoint>/')
+@app.route('/foursquare/addcomment/', methods=['POST'])
+def foursquare_addcomment():
+    '''Adding new comments to foursquare venues'''
+    
+    if request.is_xhr:
+        venueId = request.form['venueid']
+        text = request.form['text']
+        if request.form['wheelmapid']:
+            url = 'http://wheelmap.org/en/nodes/' + request.form['wheelmapid']
+        else:
+            url = False
+        try:
+            squarewheel.foursquare_add_comment(venueId, text, url)
+        except Exception, e:
+            return jsonify(error=str(e))
+        else:
+            return jsonify(success=True)
+
+@app.route('/foursquare/<path:endpoint>/', methods=['GET'])
 def getvenues(endpoint):
     endpoint = endpoint.split('?')[0]
     page = request.args.get('page', '', type=int)
@@ -67,26 +85,7 @@ def get_nodes():
     lat = request.args.get('lat', '', type=float)
     lng = request.args.get('lng', '', type=float)
     name = request.args.get('name', '')
-    return squarewheel.json_node_search(name, lat, lng)
-
-@app.route('/foursquare/addcomment/', methods=['POST'])
-def foursquare_addcomment():
-    '''Adding new comments to foursquare venues'''
-    
-    if request.is_xhr:
-        venueId = request.form['venueid']
-        text = request.form['text']
-        if request.form['wheelmapid']:
-            url = 'http://wheelmap.org/en/nodes/' + request.form['wheelmapid']
-        else:
-            url = False
-        try:
-            squarewheel.foursquare_add_comment(venueId, text, url)
-        except foursquare.Other, e:
-            return jsonify(error=str(e))
-        else:
-            return jsonify(success=True)
-        
+    return squarewheel.json_node_search(name, lat, lng)  
         
 @app.route('/foursquare')
 def foursquare_callback():
