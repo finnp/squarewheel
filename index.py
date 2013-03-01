@@ -8,9 +8,9 @@ from flask import request
 from flask import session
 from flask import g
 from flask import jsonify
+import simple4sq as fq
 
 import squarewheel
-import easyfoursquare as fq
 from config import FLASK_SECRET_KEY
 from config import DEBUG
 

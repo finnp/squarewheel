@@ -14,7 +14,7 @@ from flask import session
 
 # Local
 import wheelmap
-import easyfoursquare as fq
+import simple4sq as fq
 from config import FOURSQUARE_CLIENT_ID
 from config import FOURSQUARE_CALLBACK_URL
 from config import FOURSQUARE_CLIENT_SECRET
