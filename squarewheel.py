@@ -1,18 +1,15 @@
-# Standard libraries
 import json
-import difflib
 import math
 import re
 import sys
 import uuid
 from urllib2 import urlopen
 from urllib2 import unquote
+from difflib import SequenceMatcher
 
-# Third party
 from mongokit import Connection
 from flask import session
 
-# Local
 import wheelmap
 import simple4sq as fq
 from config import FOURSQUARE_CLIENT_ID
@@ -29,17 +26,18 @@ from config import MONGODB_PORT
 fq.cred = (FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET, FOURSQUARE_CALLBACK_URL)
 
 class FoursquareVenue:
+    """Class for transporting information about the venue. Includes
+    the identifier for the tiles used from openstreetmap."""
     __slots__ = ('foursquare_id', 'lat', 'lng', 'name', 'xtile', 'ytile')
     def __init__(self, json_venue):
         """Takes a foursquare venue from the official API"""
-        self.foursquare_id = json_venue["id"]
-        self.lat = json_venue["location"]["lat"]
-        self.lng = json_venue["location"]["lng"]
-        self.name = json_venue["name"]
-        (self.xtile, self.ytile) = deg2num(self.lat, self.lng, 16)        
+        self.foursquare_id = json_venue['id']
+        self.lat = json_venue['location']['lat']
+        self.lng = json_venue['location']['lng']
+        self.name = json_venue['name']
+        (self.xtile, self.ytile) = osm_deg2num(self.lat, self.lng, 16)        
             
-# By OpenStreetMap
-def deg2num(lat_deg, lon_deg, zoom):
+def osm_deg2num(lat_deg, lon_deg, zoom):
     """Takes latitude, longitude and zoomlevel and returns 
     the titles on openstreetmap we are looking for"""
     lat_rad = math.radians(lat_deg)
@@ -49,6 +47,7 @@ def deg2num(lat_deg, lon_deg, zoom):
     return (xtile, ytile)
            
 def get_venues(endpoint, page = 0, params = {}):
+    """Takes an endpoint and requests venues from foursquare"""
     per_page = 10
     params['limit'] = per_page
     params['offset'] = page * per_page
@@ -88,30 +87,33 @@ def search_wheelmap (lat, lng, interval, name, n):
     
     nodes = wheelmap_client.nodes_collection(bbox=bbox, per_page=n)    
     
+    # max_node and max_name_match are holding the
+    # best match through the SequenceMatcher after the loop    
     max_name_match = 0.0
     
     for node in nodes:
         if node.name and name:
-            name_match = difflib.SequenceMatcher(None, node.name, name).ratio()
+            name_match = SequenceMatcher(None, node.name, name).ratio()
             if name_match > max_name_match:
                 max_node = node
                 max_name_match = name_match
-    
+                
+    # Is the best match better than 60% ?
+    # If yes, let's take it. Otherwise nothing was found.
     if max_name_match > 0.6:
         return max_node
     else:
         return False
 
-def get_foursquare_user():
+def get_fq_user():
     """Takes the foursquare token for the user and returns the username and an icon as a tupel"""
-    
     user = fq.request('users/self')['user']
-    
-    user['photo']['icon'] = user['photo']['prefix'] + '36x36' + user['photo']['suffix']
-    
-    return (user['firstName'], user['photo']['icon'])
+    user_icon = user['photo']['prefix'] + '36x36' + user['photo']['suffix']
+    return (user['firstName'], user_icon)
     
 def json_node_search(name, lat, lng):
+    """Searches for a node near lat lng and returns a json
+    response of a found node"""
     node = search_wheelmap(lat, lng, 0.004, name, 200)
     json_response = {}
     if node:
@@ -148,7 +150,7 @@ def mongodb_get_users():
 
     
 def fq_logged_in():
-    """Returns a tupel (user_logged_in, foursquare client)"""
+    """Returns true if the user is logged in"""
         
     if 'session_key' in session:
         collection = mongodb_get_users()
@@ -158,7 +160,7 @@ def fq_logged_in():
             return True
     return False
 
-def foursquare_add_comment(venueId, text, url):
+def fq_add_comment(venueId, text, url):
     
     params = {'text': text, 'venueId': venueId}
     if url:
@@ -177,6 +179,9 @@ def user_login():
     
     # Generate the session key
     session_key = uuid.uuid1()
+    
+    # Set the access_token       
+    fq.download_token(code)                   
     
     data = {'$set': {'session_key': unicode(session_key), 'access_token': unicode(fq.access_token) } }
     

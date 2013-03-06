@@ -2,13 +2,13 @@ import os
 from urllib2 import urlopen
 from urllib2 import unquote
 
+import simple4sq as fq
 from flask import Flask
 from flask import render_template
 from flask import request
 from flask import session
 from flask import g
 from flask import jsonify
-import simple4sq as fq
 
 import squarewheel
 from config import FLASK_SECRET_KEY
@@ -20,38 +20,34 @@ app.config.from_object(__name__)
 @app.route('/')
 def startpage():
 
+    # Check whether user wants to disconnect
     disconnect = request.args.get('disconnect', '', type=bool)
     if disconnect:
         squarewheel.user_disconnect()
     
-    if not request.is_xhr:
-        fq_logged_in = squarewheel.fq_logged_in()
-        if fq_logged_in:
-            foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user()
-            foursquare_oauth_url = False
-        else:
-            foursquare_oauth_url = fq.oauth_url()
-            foursquare_firstname = False
-            foursquare_icon = False
+    # Is the user is logged in transfer the username/icon
+    if squarewheel.fq_logged_in():
+        fq_firstname, fq_icon = squarewheel.get_fq_user()
     else:
-        foursquare_oauth_url = False
-        foursquare_firstname = False
-        foursquare_icon = False
-    return render_template('start.html', foursquare_oauth_url = foursquare_oauth_url, foursquare_icon=foursquare_icon, foursquare_firstname=foursquare_firstname)
+        fq_firstname = False
+        fq_icon = False
+    return render_template('start.html', fq_oauth_url = fq.oauth_url(), fq_icon=fq_icon, fq_firstname=fq_firstname)
 
 @app.route('/foursquare/addcomment/', methods=['POST'])
-def foursquare_addcomment():
+def fq_addcomment():
     '''Adding new comments to foursquare venues'''
     
     if request.is_xhr:
         venueId = request.form['venueid']
         text = request.form['text']
+        # Link to Wheelmap included?
         if request.form['wheelmapid']:
             url = 'http://wheelmap.org/en/nodes/' + request.form['wheelmapid']
         else:
             url = False
+        # Try to add the comment and send status response back
         try:
-            squarewheel.foursquare_add_comment(venueId, text, url)
+            squarewheel.fq_add_comment(venueId, text, url)
         except Exception, e:
             return jsonify(error=str(e))
         else:
@@ -88,21 +84,17 @@ def get_nodes():
     return squarewheel.json_node_search(name, lat, lng)  
         
 @app.route('/foursquare')
-def foursquare_callback():
+def fq_callback():
     
     fq_logged_in = squarewheel.fq_logged_in()
     
     if not fq_logged_in:
-    
         code = request.args.get('code', '')
-        
-        # Set the access_token       
-        fq.download_token(code)
-                   
-        session['session_key'] = squarewheel.user_login()
-
-        foursquare_firstname, foursquare_icon = squarewheel.get_foursquare_user()
-        return render_template('start.html', foursquare_firstname=foursquare_firstname, foursquare_icon=foursquare_icon)
+        # Log in the user and set the session_key for the user
+        session['session_key'] = squarewheel.user_login(code)
+        # Get name and icon for the user to show it
+        fq_firstname, fq_icon = squarewheel.get_fq_user()
+        return render_template('start.html', fq_firstname=fq_firstname, fq_icon=fq_icon)
     else:
         return "Already logged in"
 
