@@ -3,5 +3,22 @@
 {% endif %}
 {% block content %}
     <h3>Welcome to Squarewheel</h3>
-    <p>This is an experimental project to connect foursquare and wheelmap.</p>
+    <p>This is an service allows you look up the accessibility of venues from 
+      Foursquare. It does so by searching <a href="http://wheelmap.org/">wheelmap.org</a> 
+        for the venue. It also allows you to change the accessibility status of a venue.
+      </p>
+    <p>You can search for places or log in with your account to look up your
+    last checkins and todo list.</p>
+    <p>This project is Open Sorce and you can fork it on <a href="https://github.com/finnp/squarewheel">Github</a></p>
+    
+    <h4>Powered by</h4>
+    <a href="http://wheelmap.org/" target="_blank">
+      <img src="/static/img/wheelmap_logo.png" alt="Wheelmap Logo"/>
+    </a>
+    <a href="http://www.openstreetmap.org/" target="blank">
+      <img src="/static/img/osm_logo.png" alt="Open Streetmap Logo"/>
+    </a>
+    <a href="https://foursquare.com/">
+      <img src="/static/img/foursquare_logo.png" alt="Foursquare Logo"/>
+    </a>
 {% endblock %}
