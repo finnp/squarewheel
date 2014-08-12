@@ -11,8 +11,7 @@ from flask import g
 from flask import jsonify
 
 import squarewheel
-from config import FLASK_SECRET_KEY
-from config import DEBUG
+from os import environ as env
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -108,11 +107,11 @@ def wheelmap_update_node():
             abort(400)
             
 
-app.secret_key = FLASK_SECRET_KEY
+app.secret_key = env['FLASK_SECRET_KEY']
 
 
 if __name__ == '__main__':
-    app.debug = DEBUG # True or False
+    app.debug = 'DEBUG' in env # True or False
     if app.debug: #exception
         app.run()
     else:

@@ -6,24 +6,15 @@ import uuid
 from urllib2 import urlopen
 from urllib2 import unquote
 from difflib import SequenceMatcher
+from os import environ as env
 
 from mongokit import Connection
 from flask import session
 
 import wheelmap
 import simple4sq as fq
-from config import FOURSQUARE_CLIENT_ID
-from config import FOURSQUARE_CALLBACK_URL
-from config import FOURSQUARE_CLIENT_SECRET
-from config import WHEELMAP_API_KEY
-from config import WHEELMAP_API_KEY_VISITOR_EDITS
-from config import MONGODB_NAME
-from config import MONGODB_PW
-from config import MONGODB_HOST
-from config import MONGODB_DBNAME
-from config import MONGODB_PORT
 
-fq.cred = (FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET, FOURSQUARE_CALLBACK_URL)
+fq.cred = (env['FOURSQUARE_CLIENT_ID'], env['FOURSQUARE_CLIENT_SECRET'], env['FOURSQUARE_CALLBACK_URL'])
 
 class FoursquareVenue:
     """Class for transporting information about the venue. Includes
@@ -81,7 +72,7 @@ def search_wheelmap (lat, lng, interval, name, n):
     # Remove parentheses (better for search, generally)
     name = re.sub(r'\([^)]*\)', '', name)
     
-    wheelmap_client = wheelmap.Wheelmap(WHEELMAP_API_KEY)
+    wheelmap_client = wheelmap.Wheelmap(env['WHEELMAP_API_KEY'])
     
     bbox= (from_lng, from_lat, to_lng, to_lat)
     
@@ -137,16 +128,17 @@ def json_node_search(name, lat, lng):
     return json.dumps(json_response, indent=4, separators=(',', ': '))
     
 def update_wheelchair_status(node_id, wheelchair_status):
-    wheelmap_client = wheelmap.Wheelmap(WHEELMAP_API_KEY_VISITOR_EDITS if WHEELMAP_API_KEY_VISITOR_EDITS else WHEELMAP_API_KEY) 
+    wheelmap_client = wheelmap.Wheelmap(env['WHEELMAP_API_KEY_VISITOR_EDITS'] if 'WHEELMAP_API_KEY_VISITOR_EDITS' in env else env['WHEELMAP_API_KEY']) 
     return wheelmap_client.nodes_update_wheelchair(node_id=node_id, wheelchair=wheelchair_status)
     
 def mongodb_get_users():
     """Connects to mongodb and returns users collection"""
+    # TODO parse: MONGOHQ_URL
     
-    connection = Connection(MONGODB_HOST, MONGODB_PORT)
-    if MONGODB_NAME and MONGODB_PW:
-        connection[MONGODB_DBNAME].authenticate(MONGODB_NAME, MONGODB_PW)    
-    return connection[MONGODB_DBNAME].users
+    connection = Connection(env['MONGODB_HOST'], int(env['MONGODB_PORT']))
+    if 'MONGODB_NAME' in env and 'MONGODB_PW' in env:
+        connection[env['MONGODB_DBNAME']].authenticate(env['MONGODB_NAME'], env['MONGODB_PW'])
+    return connection[env['MONGODB_DBNAME']].users
 
     
 def fq_logged_in():
@@ -171,7 +163,7 @@ def fq_add_comment(venueId, text, url):
     return True
 
     
-def user_login():
+def user_login(code):
     """Logs in the user and returns a session_key"""
     
     # Get the collection of users from mongodb
